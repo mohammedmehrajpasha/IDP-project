@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard – FSSAI Inspector Hub</title>
+  <link rel="stylesheet" href="/css/home1.css" />
+</head>
+<body>
+
+  <!-- Navbar -->
+<%- include('partials/header1') %>
+  <!-- Main Dashboard Section -->
+  <section class="features">
+    <div class="container">
+      <div class="features-heading">
+        <h2>Welcome, <%= adminName%></h2>
+        <p>Manage inspectors, inspections, and system settings from one place.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <h3>Manage Inspectors</h3>
+          <p>Add, assign, and deactivate FSSAI inspectors across regions.</p>
+          <a href="/admin/inspectors" class="btn btn-outline">View Inspectors</a>
+        </div>
+
+        <div class="feature-card">
+          <h3>Manage Restaurants</h3>
+          <p>Oversee restaurant records and FSSAI compliance data.</p>
+          <a href="/admin/restaurants" class="btn btn-outline">View Restaurants</a>
+        </div>
+
+        <div class="feature-card">
+          <h3>Review Reports</h3>
+          <p>Approve inspection reports before public publishing.</p>
+          <a href="/admin/reports" class="btn btn-outline">Review Reports</a>
+        </div>
+
+        <div class="feature-card">
+          <h3>System Settings</h3>
+          <p>Configure hygiene parameters, public access, and user logs.</p>
+          <a href="/admin/settings" class="btn btn-outline">Configure Settings</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+</body>
+</html>
