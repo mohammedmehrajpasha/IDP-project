@@ -9,7 +9,33 @@
 <body>
 
   <!-- Navbar -->
-<%- include('partials/header1') %>
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FSSAI Inspector Hub</title>
+  <link rel="stylesheet" href="/css/partials.css" />
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+
+      <!-- Logo -->
+      <div class="logo">
+        FSSAI <span>Inspector Hub</span>
+      </div>
+
+      <!-- Logout Button -->
+      <div>
+        <a href="/logout" class="btn btn-outline">Logout</a>
+      </div>
+
+    </div>
+  </nav>
+
   <!-- Main Dashboard Section -->
   <section class="features">
     <div class="container">
