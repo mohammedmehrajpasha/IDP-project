@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🟢 Restaurant Approvals</title>
+  <link rel="stylesheet" href="/css/manageRestaurants.css" />
+</head>
+<body>
+
+<%- include('partials/header1') %>
+
+<section class="features">
+  <div class="container">
+    <div class="features-heading centered">
+      <h2>🟢 Approve / Reject Restaurants</h2>
+      <p>Review and take action on restaurants submitted by inspectors.</p>
+    </div>
+
+    <div class="inspection-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>License #</th>
+            <th>Region</th>
+            <th>Submitted By</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% pendingRestaurants.forEach(r => { %>
+            <tr>
+              <td><%= r.name %></td>
+              <td><%= r.license_number %></td>
+              <td><%= r.region %></td>
+              <td>Inspector #<%= r.created_by %></td>
+              <td>
+                <form action="/admin/restaurants/approve/<%= r.id %>" method="POST" style="display:inline;">
+                  <button type="submit" class="btn btn-success">Approve</button>
+                </form>
+                <form action="/admin/restaurants/reject/<%= r.id %>" method="POST" style="display:inline;">
+                  <button type="submit" class="btn btn-danger" onclick="return confirm('Reject this restaurant?')">Reject</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="centered">
+      <a href="/admin/restaurants" class="btn btn-outline">← Go Back</a>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

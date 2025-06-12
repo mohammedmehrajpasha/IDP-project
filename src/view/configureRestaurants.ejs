@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✏️ Manage Restaurants</title>
+  <link rel="stylesheet" href="/css/manageRestaurants.css" />
+</head>
+<body>
+
+<%- include('partials/header1') %>
+
+<section class="features">
+  <div class="container">
+    <div class="features-heading centered">
+      <h2>✏️ Edit / Delete Restaurants</h2>
+      <p>Update details or remove restaurants from your zone.</p>
+    </div>
+
+    <div class="inspection-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>License #</th>
+            <th>Region</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% approvedRestaurants.forEach(r => { %>
+            <tr>
+              <td><%= r.name %></td>
+              <td><%= r.license_number %></td>
+              <td><%= r.region %></td>
+              <td>
+                <a href="/admin/restaurants/edit/<%= r.id %>" class="btn btn-outline">Edit</a>
+                <form action="/admin/restaurants/delete/<%= r.id %>" method="POST" style="display:inline;">
+                  <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this restaurant?')">Delete</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="centered">
+      <a href="/admin/restaurants" class="btn btn-outline">← Go Back</a>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

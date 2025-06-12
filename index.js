@@ -2,20 +2,16 @@ const path = require('path');
 const express = require('express');
 const app = express();
 const db = require('./src/config/dbConnect');
-
 const session = require('express-session');
-
+    
 app.use(session({
   secret: 'kldsfjbvkaelugivdbsbvhi',
   resave: false,
   saveUninitialized: true
 }));
 
-
-
 const cors = require('cors');
 require('dotenv').config();
-
 app.use(cors())
 
 
@@ -35,6 +31,8 @@ app.use(inspectorRoutes);
 
 // Routes
 app.get('/', (req, res) => res.render('home1'));
+const adminRoutes = require("./src/routes/adminRoutes")
+app.use(adminRoutes);
 
 app.get('/logout', (req, res) => {
   req.session.destroy(err => {
@@ -44,12 +42,6 @@ app.get('/logout', (req, res) => {
 });
 
 
-app.get('/getGeoLocation', (req, res) => res.render('geoLocation'));
-
-
-
-
-  
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

@@ -53,5 +53,37 @@ VALUES
 ('Pooja Reddy', 'insp6@gmail.com', '8980077000', 'pass123', 'Chennai North', 'Red Hills'),
 ('Aman Bhatt', 'insp7@gmail.com', '8567452301', 'pass123', 'Chennai North', 'Minjur');
 
+<<<<<<< HEAD
+CREATE TABLE restaurants (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100),
+  license_number VARCHAR(50),
+  email VARCHAR(100),
+  phone VARCHAR(15),
+  zone VARCHAR(100),
+  region VARCHAR(100),
+  address TEXT,
+  status ENUM('pending', 'approved') DEFAULT 'pending',
+  created_by INT, -- inspector ID
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE inspections (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  restaurant_id INT,
+  inspector_id INT,
+  inspection_date DATE,
+  hygiene_score INT CHECK (hygiene_score BETWEEN 1 AND 5),
+  comments TEXT,
+  images TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO restaurants (id, name, license_number, email, phone, zone, region, address, status, created_by)
+VALUES
+(1, 'Spice Hub', 'LIC12345', 'spicehub@gmail.com', '9876543210', 'Bangalore South', 'Kengeri', '12, Kengeri Main Rd', 'approved', 101),
+(2, 'Green Leaf', 'LIC67890', 'greenleaf@gmail.com', '9123456789', 'Bangalore South', 'Pattanagere', '78, JP Nagar', 'approved', 102),
+(3, 'Tandoori Treat', 'LIC11122', 'treat@gmail.com', '9988776655', 'Bangalore Central', 'Indiranagar', '45, CMH Road', 'pending', 104),
+(4, 'Chennai Flavours', 'LIC33344', 'cf@gmail.com', '9080706050', 'Chennai North', 'Red Hills', '56, Red Hills Rd', 'approved', 106);
 
 
