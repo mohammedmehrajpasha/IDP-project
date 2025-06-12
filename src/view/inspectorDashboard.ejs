@@ -9,30 +9,17 @@
 <body>
 
   <!-- Navbar -->
-  <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>FSSAI Inspector Hub</title>
-  <link rel="stylesheet" href="/css/partials.css" />
-</head>
-<body>
-
-  <!-- Navigation -->
   <nav class="navbar">
     <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-
       <!-- Logo -->
       <div class="logo">
-        FSSAI <span>Inspector Hub</span>
+        🛡️ FSSAI <span>Inspector Hub</span>
       </div>
 
       <!-- Logout Button -->
       <div>
-        <a href="/logout" class="btn btn-outline">Logout</a>
+        <a href="/logout" class="btn btn-outline"> Logout</a>
       </div>
-
     </div>
   </nav>
 
@@ -40,34 +27,40 @@
   <section class="features">
     <div class="container">
       <div class="features-heading">
-        <h2>Welcome, <%= adminName%></h2>
-        <p>Manage inspectors, inspections, and system settings from one place.</p>
+        <h2>👋 Welcome, <%= inspectorName %></h2>
+        <p>Manage your assigned inspections and contribute to food safety enforcement.</p>
       </div>
 
       <div class="features-grid">
+        
+        <!-- View Regional Restaurants -->
         <div class="feature-card">
-          <h3>Manage Inspectors</h3>
-          <p>Add, assign, and deactivate FSSAI inspectors across regions.</p>
-          <a href="/admin/inspectors" class="btn btn-outline">View Inspectors</a>
+          <h3>📍 Restaurants in Your Region</h3>
+          <p>Browse all restaurants located in your assigned region. You may inspect or explore details.</p>
+          <a href="/inspector/restaurants" class="btn btn-outline">🔍 View Regional Restaurants</a>
+        </div>
+  
+        <!-- Scheduled Inspections -->
+        <div class="feature-card">
+          <h3>📅 Scheduled Inspections</h3>
+          <p>View restaurants specifically scheduled for you to inspect by the admin.</p>
+          <a href="/inspector/inspections/scheduled" class="btn btn-outline">🗂️ View Scheduled Inspections</a>
+        </div>
+  
+        <!-- Past Inspections -->
+        <div class="feature-card">
+          <h3>📖 Past Inspections</h3>
+          <p>Review previous inspection reports submitted by you.</p>
+          <a href="/inspector/inspections/history" class="btn btn-outline">📄 View Reports</a>
         </div>
 
+        <!-- Add Restaurant -->
         <div class="feature-card">
-          <h3>Manage Restaurants</h3>
-          <p>Oversee restaurant records and FSSAI compliance data.</p>
-          <a href="/admin/restaurants" class="btn btn-outline">View Restaurants</a>
+          <h3>➕ Add Restaurant</h3>
+          <p>Add a new restaurant record for approval by admin.</p>
+          <a href="/inspector/restaurants/add" class="btn btn-outline">📝 Add Restaurant</a>
         </div>
 
-        <div class="feature-card">
-          <h3>Review Reports</h3>
-          <p>Approve inspection reports before public publishing.</p>
-          <a href="/admin/reports" class="btn btn-outline">Review Reports</a>
-        </div>
-
-        <div class="feature-card">
-          <h3>System Settings</h3>
-          <p>Configure hygiene parameters, public access, and user logs.</p>
-          <a href="/admin/settings" class="btn btn-outline">Configure Settings</a>
-        </div>
       </div>
     </div>
   </section>

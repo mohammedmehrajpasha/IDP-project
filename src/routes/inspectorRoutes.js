@@ -10,12 +10,64 @@ router.get('/inspectorLogin',(req,res)=>{
   })
 
 
+  
+router.post('/inspectorLogin', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).render('inspectorLogin', { error: "All fields are required" });
+  }
+
+  try {
+    const [results] = await db.query("SELECT * FROM inspectors WHERE email = ?", [email]);
+
+    if (results.length === 0 || results[0].password !== password) {
+      return res.status(401).render('inspectorLogin', { error: "Invalid ID or password" });
+    }
+
+    req.session.zone = results[0].zone;
+    req.session.inspectorName = results[0].name;
+    res.redirect('inspector/dashboard');
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).render('inspectorLogin', { error: "Internal server error" });
+  }
+});
 
 
-  router.get('/admin/dashboard',(req,res)=>{
-    const adminName = req.session.adminName || "Admin"
-    res.render('adminDashboard',{ adminName })
+
+
+  router.get('/inspector/dashboard',(req,res)=>{
+    const inspectorName = req.session.inspectorName || "Inspector"
+    res.render('inspectorDashboard',{ inspectorName })
   })
+
+
+
+  router.get('/inspector/restaurants', async (req, res) => {
+    const inspectorZone = req.session.zone;
+    const inspectorName = req.session.inspectorName || "Inspector";
+  
+    try {
+      const [restaurants] = await db.query(
+        `SELECT id, name, license_number, region, last_inspection_date 
+         FROM restaurants 
+         WHERE zone = ?`,
+        [inspectorZone]
+      );
+  
+      res.render('regionRestaurants', {
+        inspectorName,
+        restaurants
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).render('error', { message: "Error fetching restaurants." });
+    }
+  });
+
+
+
 
   router.get('/admin/inspectors',async (req, res)=>{
      const zone = req.session.zone;
@@ -68,28 +120,6 @@ router.get('/inspectorLogin',(req,res)=>{
   
 //Admin Login
 
-router.post('/inspectorLogin', async (req, res) => {
-    const { email, password } = req.body;
-  
-    if (!email || !password) {
-      return res.status(400).render('inspectorLogin', { error: "All fields are required" });
-    }
-  
-    try {
-      const [results] = await db.query("SELECT * FROM inspectors WHERE email = ?", [email]);
-  
-      if (results.length === 0 || results[0].password !== password) {
-        return res.status(401).render('inspectorLogin', { error: "Invalid ID or password" });
-      }
-  
-      req.session.zone = results[0].zone;
-      req.session.adminName = results[0].name;
-      res.redirect('inspector/dashboard');
-    } catch (err) {
-      console.error("Database error:", err);
-      res.status(500).render('inspectorLogin', { error: "Internal server error" });
-    }
-  });
   
   router.post('/admin/inspectors/add', async (req, res) => {
     const { name, email, phone, region, password } = req.body;

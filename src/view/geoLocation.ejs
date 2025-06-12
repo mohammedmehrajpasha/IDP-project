@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Geolocation Example</title>
+  <title>Find My Location</title>
 </head>
 <body>
   <h2>Find My Location</h2>
@@ -18,9 +18,21 @@
     }
 
     function showPosition(position) {
-      document.getElementById("output").innerHTML =
-        "Latitude: " + position.coords.latitude +
-        "<br>Longitude: " + position.coords.longitude;
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      document.getElementById("output").innerHTML = `Latitude: ${lat}<br>Longitude: ${lon}`;
+
+      // Fetch address using Geoapify
+      const apiKey = "55bb1b33e15e4379bd20556b73ee9998";  // Replace this
+      fetch(`https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${apiKey}`)
+        .then(response => response.json())
+        .then(data => {
+          const address = data.features[0].properties.formatted;
+          document.getElementById("output").innerHTML += `<br><strong>Address:</strong> ${address}`;
+        })
+        .catch(error => {
+          console.error("Error fetching address:", error);
+        });
     }
 
     function showError(error) {

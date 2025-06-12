@@ -1,0 +1,79 @@
+<!-- views/inspection-form.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Inspection Form - <%= restaurant.name %></title>
+  <!-- <link rel="stylesheet" href="/css/form.css"> -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card h3 {
+      margin-top: 0;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      margin: 8px 0;
+    }
+    .checkbox-group input {
+      margin-right: 10px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      margin-top: 10px;
+      padding: 8px;
+    }
+    .btn-submit {
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn-submit:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <h2>Inspection Form for <%= restaurant.name %> (<%= restaurant.license_number %>)</h2>
+  <form action="/inspector/inspections/submit" method="POST">
+    <input type="hidden" name="restaurantId" value="<%= restaurant.id %>">
+
+    <% categories.forEach(category => { %>
+      <div class="card">
+        <h3><%= category.name %></h3>
+        <% category.items.forEach(item => { %>
+          <div class="checkbox-group">
+            <input type="checkbox" name="checks[]" value="<%= item.id %>">
+            <label><%= item.name %></label>
+          </div>
+        <% }) %>
+      </div>
+    <% }) %>
+
+    <div class="card">
+      <h3>Inspector Notes</h3>
+      <textarea name="notes" placeholder="Write observations, remarks or issues noted during inspection..."></textarea>
+    </div>
+
+    <button type="submit" class="btn-submit">Submit Inspection</button>
+  </form>
+</body>
+</html>
