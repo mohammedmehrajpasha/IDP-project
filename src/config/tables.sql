@@ -53,6 +53,7 @@ VALUES
 ('Pooja Reddy', 'insp6@gmail.com', '8980077000', 'pass123', 'Chennai North', 'Red Hills'),
 ('Aman Bhatt', 'insp7@gmail.com', '8567452301', 'pass123', 'Chennai North', 'Minjur');
 
+<<<<<<< HEAD
 CREATE TABLE restaurants (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(100),
@@ -84,4 +85,5 @@ VALUES
 (2, 'Green Leaf', 'LIC67890', 'greenleaf@gmail.com', '9123456789', 'Bangalore South', 'Pattanagere', '78, JP Nagar', 'approved', 102),
 (3, 'Tandoori Treat', 'LIC11122', 'treat@gmail.com', '9988776655', 'Bangalore Central', 'Indiranagar', '45, CMH Road', 'pending', 104),
 (4, 'Chennai Flavours', 'LIC33344', 'cf@gmail.com', '9080706050', 'Chennai North', 'Red Hills', '56, Red Hills Rd', 'approved', 106);
+
 

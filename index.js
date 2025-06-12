@@ -23,6 +23,12 @@ app.set('views', path.join(__dirname, 'src', 'view'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 
+const adminRoutes = require("./src/routes/adminRoutes");
+app.use(adminRoutes);
+
+const inspectorRoutes = require("./src/routes/inspectorRoutes");
+app.use(inspectorRoutes);
+
 // Routes
 app.get('/', (req, res) => res.render('home1'));
 const adminRoutes = require("./src/routes/adminRoutes")
