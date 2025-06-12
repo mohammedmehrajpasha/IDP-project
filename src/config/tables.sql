@@ -52,3 +52,6 @@ VALUES
 ('Sameer Patil', 'insp5@gmail.com', '8787878787', 'pass123', 'Banglore Central', 'Koramangala'),
 ('Pooja Reddy', 'insp6@gmail.com', '8980077000', 'pass123', 'Chennai North', 'Red Hills'),
 ('Aman Bhatt', 'insp7@gmail.com', '8567452301', 'pass123', 'Chennai North', 'Minjur');
+
+
+
