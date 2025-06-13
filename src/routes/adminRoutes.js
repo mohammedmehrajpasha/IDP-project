@@ -51,10 +51,7 @@ router.get('/admin/restaurants',async (req, res)=>{
   
   res.render('manageRestaurants')
 })
-router.get('/admin/restaurants/view',async (req, res)=>{
-    const [approvedRestaurants] = await db.query('SELECT * FROM restaurants where status= ?',['approved']);
-    res.render('restaurantsView',{approvedRestaurants});
-})
+
 router.get('/admin/restaurants/approvals',async (req, res)=>{
   const [pendingRestaurants] = await db.query('SELECT * FROM restaurants where status=?',['pending']);
   res.render('restaurantsApproval',{pendingRestaurants})
@@ -203,6 +200,70 @@ router.post('/admin/restaurants/delete/:id', async (req, res) => {
     res.status(500).render('error', { message: 'Failed to delete restaurant' });
   }
 });
+
+
+
+
+router.get('/admin/inspections',async (req, res)=>{
+  
+  res.render('manageInspection')
+})
+
+// Schedule a new inspection for a restaurant
+router.get('/admin/restaurants/schedule/:id', async (req, res) => {
+  const restaurantId = req.params.id;
+
+  try {
+    // First, fetch restaurant details to find:
+    // 1️⃣ Inspector (created_by) 
+    // 2️⃣ Last Inspection Date
+    const [rows] = await db.query(`
+      SELECT created_by, last_inspection_date FROM restaurants WHERE id = ?
+    `, [restaurantId]);
+
+    if (rows.length === 0) {
+      return res.status(404).send('Restaurant not found');
+    }
+    const inspectorId = rows[0].created_by;
+    const lastInspection = rows[0].last_inspection_date;
+
+    // Next, insert into inspections table with the fetched info
+    await db.query(`
+      INSERT INTO inspections (restaurant_id, inspector_id, status, last_inspection)
+      VALUES (?, ?, ?, ?)
+    `, [restaurantId, inspectorId, 'Scheduled', lastInspection]);
+
+    res.redirect('/admin/restaurants/view?success=1'); // Redirect back to restaurants view or wherever you want
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+
+router.get('/admin/restaurants/view', async (req, res) => {
+  const zone = req.session.zone;
+  const { success } = req.query;
+
+  try {
+    const [approvedRestaurants] = await db.query(`
+      SELECT * FROM restaurants r
+      WHERE r.status = 'approved'
+        AND r.zone = ?
+        AND r.id NOT IN (
+          SELECT i.restaurant_id FROM inspections i WHERE i.status IN ('Scheduled', 'Completed')
+        )
+    `, [zone]);
+
+    res.render('restaurantsView', { approvedRestaurants ,success  });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
 
 
 module.exports = router;
