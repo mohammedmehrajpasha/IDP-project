@@ -2,15 +2,10 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/dbConnect');
 
-
-
-
 router.get('/inspectorLogin',(req,res)=>{
     res.render('inspectorLogin');
   })
 
-
-  
 router.post('/inspectorLogin', async (req, res) => {
   const { email, password } = req.body;
 
@@ -198,23 +193,6 @@ router.post('/inspectorLogin', async (req, res) => {
       res.status(500).render('error', { message: 'Failed to update inspector.' });
     }
   });
-
-
-
-
-
-
-  //Restorunts
-
-  
-  
-  
-  
-  
-
-
-
-
 
 
 module.exports = router; 
