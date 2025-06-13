@@ -95,3 +95,41 @@ VALUES
 
 
 
+
+
+
+
+
+CREATE TABLE inspections (
+    id INT NOT NULL AUTO_INCREMENT,
+    restaurant_id INT NOT NULL,
+    inspector_id INT NOT NULL,
+    status ENUM('Scheduled', 'Not-Scheduled') NOT NULL,
+    last_inspection DATE NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants(id),
+    FOREIGN KEY (inspector_id) REFERENCES inspectors(id)
+);
+
+
+select * from inspectors;
+ INSERT INTO inspections (restaurant_id, inspector_id, status, last_inspection) VALUES
+ (1, 1, 'Scheduled', '2025-06-10'),
+ (2, 1, 'Not-Scheduled', '2025-06-05'),
+ (3, 1, 'Scheduled', '2025-05-30'),
+ (4, 1, 'Not-Scheduled', '2025-05-20'),
+ (5, 1, 'Scheduled', '2025-06-11');
+
+SET SQL_SAFE_UPDATES = 0;
+
+
+UPDATE restaurants
+SET created_by = 1;
+
+
+select * from restaurants;
+
+
+
+
+
