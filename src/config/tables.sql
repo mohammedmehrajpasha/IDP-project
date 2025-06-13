@@ -130,3 +130,6 @@ CREATE TABLE users (
     phone VARCHAR(15),
     password VARCHAR(255) NOT NULL
 );
+
+
+ALTER TABLE inspection_reports ADD COLUMN notes TEXT;

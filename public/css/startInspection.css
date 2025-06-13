@@ -117,3 +117,38 @@ h2 {
 .custom-checkbox input[type="checkbox"]:checked ~ * {
   background-color: var(--light-green); /* Apply to whole label */
 }
+
+
+.inspection-item {
+  margin-bottom: 20px;
+}
+
+.inspection-item h3 {
+  margin-bottom: 10px;
+  color: #2c3e50;
+  font-size: 1.2rem;
+}
+
+.inspection-item label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #34495e;
+}
+
+.inspection-item textarea {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  color: #2c3e50;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  resize: vertical;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+.inspection-item textarea:focus {
+  border: 1px solid #007bff;
+  box-shadow: 0 0 5px 1px #007bff;
+  outline: none;
+}
