@@ -54,30 +54,32 @@
               <th>🚀 Action</th>
             </tr>
           </thead>
-          <tbody>
-            <% scheduledInspections.forEach(function(inspection){ %>
-              <tr>
-                <td><%= inspection.name %></td>
-                <td><%= inspection.license_number %></td>
-                <td><%= inspection.phone %></td>
-                <td><%= inspection.address %></td>
-                <td>
-                   <% if (inspection.last_inspection) { %>
-                     <%= new Date(inspection.last_inspection).toLocaleDateString() %>
-                   <% } else { %>
-                     ⏳ Not Inspected
-                   <% } %>
-                 </td>
-                 <td>
-                   <a
-                      href="/inspections/start/<%= inspection.id %>"
-                      class="btn-view">
-                      Start Inspection
-                   </a>
-                 </td>
-              </tr>
-            <% }); %>
-          </tbody>
+          
+            <tbody>
+                <% scheduledInspections.forEach(function(inspection){ %>
+                  <tr>
+                    <td><%= inspection.name %></td>
+                    <td><%= inspection.license_number %></td>
+                    <td><%= inspection.phone %></td>
+                    <td><%= inspection.address %></td>
+                    <td>
+                      <% if (inspection.last_inspection) { %>
+                        <%= new Date(inspection.last_inspection).toLocaleDateString() %>
+                      <% } else { %>
+                        ⏳ Not Inspected
+                      <% } %>
+                    </td>
+                    <td>
+                      <a
+                        href="/inspections/start/<%= inspection.inspection_id %>"
+                        class="btn-view">
+                        Start Inspection
+                      </a>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+
         </table>
       <% } %>
     </div>

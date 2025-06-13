@@ -106,32 +106,32 @@ router.post('/inspectorLogin', async (req, res) => {
 
 
   // Assuming you have Express and a database connection (like mysql)
+  router.get('/inspections/scheduled', async (req, res) => {
+    const inspectorId = req.session.ID;
+    console.log('InspectorId from session?', inspectorId);
+  
+    try {
+        const [rows] = await db.query(`
+            SELECT i.id AS inspection_id, r.name, r.license_number, r.phone, r.address, i.last_inspection
+            FROM inspections i
+            JOIN restaurants r ON i.restaurant_id = r.id
+            WHERE i.inspector_id = ? AND i.status = 'Scheduled'
+        `, [inspectorId]);
+  
+        res.render('inspectionScheduled', { scheduledInspections: rows });
+  
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+  });
+  
 
-router.get('/inspections/scheduled', async (req, res) => {
-  const inspectorId = req.session.ID; // or however you track the currently logged in Inspector
-  console.log(inspectorId);
-
-  try {
-      const [rows] = await db.query(`
-          SELECT r.name, r.license_number, r.phone, r.address, i.last_inspection
-          FROM inspections i
-          JOIN restaurants r ON i.restaurant_id = r.id
-          WHERE i.inspector_id = ? AND i.status = 'Scheduled'
-      `, [inspectorId]);
-
-      res.render('inspectionScheduled', { scheduledInspections: rows });
-
-  } catch (err) {
-      console.error(err);
-      res.status(500).send('Server Error');
-  }
-});
 
 
 router.get('/inspections/start/:id', (req, res) => {
   const inspectionId = req.params.id;
-  // Handle starting the inspection here, 
-  // e.g., render a form for entering observation details.
+
   res.render('startInspection', { inspectionId });
 });
 
