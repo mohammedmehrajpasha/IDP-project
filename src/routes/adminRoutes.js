@@ -64,6 +64,7 @@ router.get('/admin/restaurants/configure',async (req, res)=>{
 })
 
 router.post('/adminLogin',async (req, res)=>{
+  console.log(req.body);
   const {email, password} = req.body;
   if (!email || !password) {
     return res.status(400).render('error', { message: "All fields are required" });

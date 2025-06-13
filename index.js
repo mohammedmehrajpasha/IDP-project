@@ -31,8 +31,8 @@ app.use(inspectorRoutes);
 
 // Routes
 app.get('/', (req, res) => res.render('home1'));
-const adminRoutes = require("./src/routes/adminRoutes")
-app.use(adminRoutes);
+
+app.get('/getGeoLocation', (req, res) => res.render('geoLocation'));
 
 app.get('/logout', (req, res) => {
   req.session.destroy(err => {
@@ -47,6 +47,8 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).render('error', { message: 'Something broke!' });
 });
+
+
 
 // Start server
 const PORT = 5000;

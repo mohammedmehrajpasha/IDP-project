@@ -27,6 +27,7 @@ router.post('/inspectorLogin', async (req, res) => {
 
     req.session.zone = results[0].zone;
     req.session.inspectorName = results[0].name;
+    req.session.region=results[0].region;
     res.redirect('inspector/dashboard');
   } catch (err) {
     console.error("Database error:", err);
@@ -67,6 +68,40 @@ router.post('/inspectorLogin', async (req, res) => {
   });
 
 
+
+  router.get('/inspector/restaurants/add', (req, res) => {
+    const { zone, region } = req.session;
+    const { success } = req.query;
+  
+    if (!zone || !region) {
+      return res.status(403).render('error', { message: 'Unauthorized access. Session expired or not found.' });
+    }
+  
+    res.render('addRestaurant', { zone, region, success });
+  });
+
+  router.post('/inspector/restaurants/add', async (req, res) => {
+    const { name, license_number, email, phone, address } = req.body;
+    const zone = req.session.zone;
+    const region = req.session.region;
+    const created_by = req.session.inspectorId;
+  
+    try {
+      await db.query(
+        `INSERT INTO restaurants 
+         (name, license_number, email, phone, zone, region, address, created_by) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [name, license_number, email, phone, zone, region, address, created_by]
+      );
+  
+      // Redirect with a success flag
+      res.redirect('/inspector/restaurants/add?success=1');
+    } catch (err) {
+      console.error('Error adding restaurant:', err);
+      res.status(500).render('error', { message: 'Failed to add restaurant.' });
+    }
+  });
+  
 
 
   router.get('/admin/inspectors',async (req, res)=>{
