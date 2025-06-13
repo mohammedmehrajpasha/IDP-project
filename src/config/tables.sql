@@ -89,47 +89,22 @@ VALUES
 (7, 'Spice Hub111', 'LIC12346', 'spicehub@gmail.com', '9876543210', 'Banglore South', 'Kengeri', '12, Kengeri Main Rd', 'approved', 101),
 (8, 'Spice Hub112', 'LIC12346', 'spicehub@gmail.com', '9876543210', 'Banglore South', 'Kengeri', '12, Kengeri Main Rd', 'approved', 101),
 (9, 'Spice Hub113', 'LIC12346', 'spicehub@gmail.com', '9876543210', 'Banglore South', 'Kengeri', '12, Kengeri Main Rd', 'approved', 101),
-(10, 'Spice Hub114', 'LIC12346', 'spicehub@gmail.com', '9876543210', 'Banglore South', 'Kengeri', '12, Kengeri Main Rd', 'approved', 101)
-;
-
-
-
-
-
-
-
-
+(10, 'Spice Hub114', 'LIC12346', 'spicehub@gmail.com', '9876543210', 'Banglore South', 'Kengeri', '12, Kengeri Main Rd', 'approved', 101);
 
 CREATE TABLE inspections (
     id INT NOT NULL AUTO_INCREMENT,
     restaurant_id INT NOT NULL,
     inspector_id INT NOT NULL,
-    status ENUM('Scheduled', 'Not-Scheduled') NOT NULL,
+    status ENUM('Scheduled', 'Not-Scheduled','Completed') NOT NULL,
     last_inspection DATE NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (restaurant_id) REFERENCES restaurants(id),
     FOREIGN KEY (inspector_id) REFERENCES inspectors(id)
 );
 
-
-select * from inspectors;
  INSERT INTO inspections (restaurant_id, inspector_id, status, last_inspection) VALUES
  (1, 1, 'Scheduled', '2025-06-10'),
  (2, 1, 'Not-Scheduled', '2025-06-05'),
  (3, 1, 'Scheduled', '2025-05-30'),
  (4, 1, 'Not-Scheduled', '2025-05-20'),
- (5, 1, 'Scheduled', '2025-06-11');
-
-SET SQL_SAFE_UPDATES = 0;
-
-
-UPDATE restaurants
-SET created_by = 1;
-
-
-select * from restaurants;
-
-
-
-
-
+ (8, 1, 'Scheduled', '2025-06-11');
