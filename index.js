@@ -29,6 +29,10 @@ app.use(adminRoutes);
 const inspectorRoutes = require("./src/routes/inspectorRoutes");
 app.use(inspectorRoutes);
 
+
+const userRoutes = require("./src/routes/userRoutes");
+app.use(userRoutes);
+
 // Routes
 app.get('/', (req, res) => res.render('home1'));
 
