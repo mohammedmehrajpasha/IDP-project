@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Restaurant – FSSAI Inspector Hub</title>
+  <link rel="stylesheet" href="/css/manageRestaurants.css" />
+</head>
+<body>
+
+<%- include('partials/header1') %>
+
+<section class="features">
+  <div class="container">
+    <div class="features-heading centered">
+      <h2>✏️ Edit Restaurant</h2>
+      <p>Update restaurant details below.</p>
+    </div>
+
+    <form action="/admin/restaurants/edit/<%= restaurant.id %>" method="POST" class="add-form">
+      <input type="text" name="name" placeholder="Restaurant Name" value="<%= restaurant.name %>" required>
+      <input type="text" name="license_number" placeholder="License Number" value="<%= restaurant.license_number %>" required>
+      <input type="email" name="email" placeholder="Email" value="<%= restaurant.email %>" required>
+      <input type="text" name="phone" placeholder="Phone Number" value="<%= restaurant.phone %>" required>
+      <input type="text" name="zone" placeholder="Zone" value="<%= restaurant.zone %>" required>
+      <input type="text" name="region" placeholder="Region" value="<%= restaurant.region %>" required>
+      <textarea name="address" placeholder="Address" rows="3" required><%= restaurant.address %></textarea>
+
+      <select name="status" required>
+        <option value="pending" <%= restaurant.status === 'pending' ? 'selected' : '' %>>Pending</option>
+        <option value="approved" <%= restaurant.status === 'approved' ? 'selected' : '' %>>Approved</option>
+        <option value="rejected" <%= restaurant.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
+      </select>
+
+      <button type="submit" class="btn">Update Restaurant</button>
+    </form>
+
+    <div class="centered" style="margin-top: 20px;">
+      <a href="/admin/restaurants/configure" class="btn btn-outline">← Go Back</a>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

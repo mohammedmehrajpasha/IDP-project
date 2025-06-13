@@ -31,8 +31,6 @@ app.use(inspectorRoutes);
 
 // Routes
 app.get('/', (req, res) => res.render('home1'));
-const adminRoutes = require("./src/routes/adminRoutes")
-app.use(adminRoutes);
 
 app.get('/logout', (req, res) => {
   req.session.destroy(err => {
