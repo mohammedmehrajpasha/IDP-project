@@ -108,3 +108,14 @@ CREATE TABLE inspections (
  (3, 1, 'Scheduled', '2025-05-30'),
  (4, 1, 'Not-Scheduled', '2025-05-20'),
  (8, 1, 'Scheduled', '2025-06-11');
+
+
+
+drop table users;
+
+CREATE TABLE users (
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL PRIMARY KEY,
+    phone VARCHAR(15),
+    password VARCHAR(255) NOT NULL
+);
