@@ -12,10 +12,15 @@
 
 <section class="features">
   <div class="container">
-    <div class="features-heading">
+    <div class="features-heading centered">
       <h2>Add New Inspector</h2>
       <p>Enter details for the inspector to be assigned under your zone.</p>
     </div>
+    <% if (success) { %>
+      <div class="success-message">
+        ✅ Inspector added successfully!
+      </div>
+    <% } %>
 
     <!-- Add Inspector Form -->
     <form action="/admin/inspectors/add" method="POST" class="add-form">
@@ -27,7 +32,7 @@
       <button type="submit" class="btn">Add Inspector</button>
     </form>
     
-    <div style="margin-top: 20px;">
+    <div class="centered" style="margin-top: 20px;">
       <a href="/admin/inspectors" class="btn btn-outline">Back to Inspector List</a>
     </div>
   </div>

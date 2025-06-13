@@ -1,22 +1,20 @@
 :root {
   --primary: #4361ee;
   --secondary: #3f37c9;
-  --accent: #4895ef;
-  --light: #f8f9fa;
-  --dark: #212529;
-  --success: #4cc9f0;
   --danger: #f72585;
-  --warning: #f8961e;
-  --info: #90dbf4;
+  --dark: #212529;
 }
 
+/* Base Styles */
 body {
   background-color: #f9f9f9;
   color: var(--dark);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-/* Heading Section */
+/* Section Heading */
 .features-heading {
   text-align: center;
   margin-bottom: 30px;
@@ -28,61 +26,61 @@ body {
   margin-bottom: 10px;
 }
 
-/* Add Form */
-.add-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: space-between;
-  margin-bottom: 40px;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-.add-form input {
-  flex: 1 1 200px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+.features-heading p {
   font-size: 1rem;
+  color: #555;
 }
 
-.add-form button {
-  background-color: var(--primary);
-  color: white;
-  border: none;
+/* Zone Header */
+.zone-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 30px auto 10px;
+  width: 95%;
+  flex-wrap: wrap;
+  background: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.zone-label {
+  font-size: 1.1rem;
+  color: var(--primary);
+}
+
+.add-button .btn {
   padding: 10px 20px;
-  border-radius: 6px;
   font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s;
 }
 
-.add-form button:hover {
-  background-color: var(--secondary);
+/* Table Styles */
+.inspection-table {
+  margin: 30px auto;
+  width: 95%;
+  overflow-x: auto;
 }
 
-/* Table Styling */
 .inspection-table table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
+  background: white;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.inspection-table thead {
-  background-color: var(--primary);
-  color: white;
-}
-
-.inspection-table th, .inspection-table td {
-  padding: 12px 15px;
+.inspection-table th,
+.inspection-table td {
+  padding: 14px 18px;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border: 1px solid #e0e0e0;
+}
+
+.inspection-table th {
+  background-color: #f5f5f5;
+  color: var(--dark);
 }
 
 .inspection-table tbody tr:hover {
@@ -91,13 +89,15 @@ body {
 
 /* Buttons */
 .btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: 600;
+  padding: 10px 18px;
   font-size: 0.9rem;
-  transition: all 0.3s ease;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease;
 }
 
 .btn-outline {
@@ -120,20 +120,6 @@ body {
 .btn-danger:hover {
   background-color: #c9184a;
 }
-
-.zone-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 20px 20px;
-  flex-wrap: wrap;
-}
-
-.zone-label {
-  font-size: 1.1rem;
-  color: var(--primary);
-}
-
-.add-button {
-  margin-top: 10px;
+.features-heading h2{
+  padding-top: 40px;
 }

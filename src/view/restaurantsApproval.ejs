@@ -40,7 +40,7 @@
                   <button type="submit" class="btn btn-success">Approve</button>
                 </form>
                 <form action="/admin/restaurants/reject/<%= r.id %>" method="POST" style="display:inline;">
-                  <button type="submit" class="btn btn-danger" onclick="return confirm('Reject this restaurant?')">Reject</button>
+                  <button type="submit" class="btn btn-danger" style="background-color: red;" onclick="return confirm('Reject this restaurant?')">Reject</button>
                 </form>
               </td>
             </tr>

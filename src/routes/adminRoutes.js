@@ -30,7 +30,8 @@ router.get('/admin/inspectors/add', (req, res) => {
   if (!req.session.zone) {
     return res.status(403).render('error', { message: 'Session expired' });
   }
-  res.render('addInspector');
+  const { success } = req.query;
+  res.render('addInspector',{success});
 })
 router.get('/admin/inspectors/edit/:id', async (req, res) => {
   const inspectorId = req.params.id;
@@ -59,9 +60,26 @@ router.get('/admin/restaurants/approvals',async (req, res)=>{
   res.render('restaurantsApproval',{pendingRestaurants})
 })
 router.get('/admin/restaurants/configure',async (req, res)=>{
-    const [approvedRestaurants] = await db.query('SELECT * FROM restaurants where status= ?',['approved']);
+    const [approvedRestaurants] = await db.query('SELECT * FROM restaurants');
     res.render('configureRestaurants',{approvedRestaurants});
 })
+router.get('/admin/restaurants/edit/:id', async (req, res) => {
+  const restaurantId = req.params.id;
+
+  try {
+    const [rows] = await db.query('SELECT * FROM restaurants WHERE id = ?', [restaurantId]);
+
+    if (rows.length === 0) {
+      return res.status(404).render('error', { message: 'Restaurant not found' });
+    }
+
+    res.render('editRestaurant', { restaurant: rows[0] });
+  } catch (err) {
+    console.error('Error loading edit page:', err);
+    res.status(500).render('error', { message: 'Internal server error' });
+  }
+});
+
 
 router.post('/adminLogin',async (req, res)=>{
   console.log(req.body);
@@ -95,7 +113,7 @@ router.post('/admin/inspectors/add', async (req, res) => {
       'INSERT INTO inspectors (name, email, phone, password, zone, region) VALUES (?, ?, ?, ?, ?, ?)',
       [name, email, phone, password, zone, region]
     );
-    res.redirect('/admin/inspectors');
+    res.redirect('/admin/inspectors/add?success=1');
   } catch (err) {
     console.error(err);
     res.status(500).render('error', { message: 'Failed to add inspector.' });
@@ -128,5 +146,63 @@ router.post('/admin/inspectors/edit/:id', async (req, res) => {
     res.status(500).render('error', { message: 'Failed to update inspector.' });
   }
 });
+router.post('/admin/restaurants/approve/:id', async (req, res) => {
+  const restaurantId = req.params.id;
+
+  try {
+    await db.query(
+      'UPDATE restaurants SET status = ? WHERE id = ?',
+      ['approved', restaurantId]
+    );
+    res.redirect('/admin/restaurants/approvals');
+  } catch (err) {
+    console.error('Error approving restaurant:', err);
+    res.status(500).render('error', { message: 'Failed to approve restaurant' });
+  }
+});
+router.post('/admin/restaurants/reject/:id', async (req, res) => {
+  const restaurantId = req.params.id;
+
+  try {
+    await db.query(
+      'UPDATE restaurants SET status = ? WHERE id = ?',
+      ['rejected', restaurantId]
+    );
+    res.redirect('/admin/restaurants/approvals');
+  } catch (err) {
+    console.error('Error rejecting restaurant:', err);
+    res.status(500).render('error', { message: 'Failed to reject restaurant' });
+  }
+});
+router.post('/admin/restaurants/edit/:id', async (req, res) => {
+  const id = req.params.id;
+  const { name, license_number, email, phone, zone, region, address, status } = req.body;
+
+  try {
+    await db.query(
+      `UPDATE restaurants 
+       SET name = ?, license_number = ?, email = ?, phone = ?, zone = ?, region = ?, address = ?, status = ?
+       WHERE id = ?`,
+      [name, license_number, email, phone, zone, region, address, status, id]
+    );
+
+    res.redirect('/admin/restaurants/manage');
+  } catch (err) {
+    console.error('Error updating restaurant:', err);
+    res.status(500).render('error', { message: 'Failed to update restaurant' });
+  }
+});
+router.post('/admin/restaurants/delete/:id', async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    await db.query('UPDATE restaurants SET status = ? WHERE id = ?', ['rejected', id]);
+    res.redirect('/admin/restaurants/configure');
+  } catch (err) {
+    console.error('Error deleting restaurant:', err);
+    res.status(500).render('error', { message: 'Failed to delete restaurant' });
+  }
+});
+
 
 module.exports = router;
