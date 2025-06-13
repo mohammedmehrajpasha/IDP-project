@@ -103,7 +103,6 @@ router.post('/inspectorLogin', async (req, res) => {
   // Assuming you have Express and a database connection (like mysql)
   router.get('/inspections/scheduled', async (req, res) => {
     const inspectorId = req.session.ID;
-    console.log('InspectorId from session?', inspectorId);
   
     try {
         const [rows] = await db.query(`
@@ -124,11 +123,11 @@ router.post('/inspectorLogin', async (req, res) => {
 
 
 
-router.get('/inspections/start/:id', (req, res) => {
-  const inspectionId = req.params.id;
+// router.get('/inspections/start/:id', (req, res) => {
+//   const inspectionId = req.params.id;
 
-  res.render('startInspection', { inspectionId });
-});
+//   res.render('startInspection', { inspectionId });
+// });
 
 
   
@@ -180,10 +179,37 @@ router.get('/inspections/start/:id', (req, res) => {
       res.status(500).render('error', { message: 'Failed to load inspector data.' });
     }
   });
-  
+
+const inspectionCategories = require('../data/inspectionCategories');
+router.get('/inspections/start/:id', async (req, res) => {
+  const inspectionId = req.params.id;
+
+  try {
+    // Get inspection and restaurant info
+    const [[inspection]] = await db.query(
+      `SELECT i.*, r.name, r.license_number, r.phone, r.address
+       FROM inspections i
+       JOIN restaurants r ON i.restaurant_id = r.id
+       WHERE i.id = ?`, [inspectionId]);
+
+    if (!inspection) {
+      return res.status(404).render('error', { message: 'Inspection not found' });
+    }
+
+    res.render('startInspection', {
+      inspection,
+      restaurant: inspection,
+      categories: inspectionCategories
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).render('error', { message: 'Internal Server Error' });
+  }
+});
+
 
   
-//Admin Login
+//Post
 
   
   router.post('/admin/inspectors/add', async (req, res) => {
@@ -228,6 +254,47 @@ router.get('/inspections/start/:id', (req, res) => {
       res.status(500).render('error', { message: 'Failed to update inspector.' });
     }
   });
+
+  router.post('/inspections/start/:id', async (req, res) => {
+  const inspectionId = req.params.id;
+  const inspectorId = req.session.ID; // assumes session stores login
+  const formData = req.body;
+
+  try {
+    // Get restaurant ID from inspection
+    const [[inspection]] = await db.query(
+      `SELECT * FROM inspections WHERE id = ?`, [inspectionId]);
+
+    if (!inspection) {
+      return res.status(404).render('error', { message: 'Invalid inspection ID' });
+    }
+
+    // Build JSON from checkbox data
+    const report = {};
+
+    for (const category in formData) {
+      report[category] = {};
+      for (const item in formData[category]) {
+        report[category][item] = true; // checkbox means compliant
+      }
+    }
+
+    // Insert into inspection_reports
+    await db.query(`
+      INSERT INTO inspection_reports 
+      (inspection_id, inspector_id, restaurant_id, report_json)
+      VALUES (?, ?, ?, ?)
+    `, [inspectionId, inspectorId, inspection.restaurant_id, JSON.stringify(report)]);
+
+    // Mark inspection as Completed
+    await db.query(`UPDATE inspections SET status = 'Completed' WHERE id = ?`, [inspectionId]);
+
+    res.redirect('/inspector/dashboard');
+  } catch (err) {
+    console.error(err);
+    res.status(500).render('error', { message: 'Failed to submit inspection' });
+  }
+});
 
 
 module.exports = router; 

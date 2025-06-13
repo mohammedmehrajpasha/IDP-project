@@ -74,7 +74,7 @@ CREATE TABLE restaurants (
   region VARCHAR(100),
   address TEXT,
   status ENUM('pending', 'approved','rejected') DEFAULT 'pending',
-  created_by INT, -- inspector ID
+  created_by INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   last_inspection_date DATE DEFAULT NULL
 );
@@ -108,3 +108,16 @@ CREATE TABLE inspections (
  (3, 1, 'Scheduled', '2025-05-30'),
  (4, 1, 'Not-Scheduled', '2025-05-20'),
  (8, 1, 'Scheduled', '2025-06-11');
+
+CREATE TABLE inspection_reports (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  inspection_id INT,
+  inspector_id INT,
+  restaurant_id INT,
+  report_json JSON NOT NULL,
+  submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+  FOREIGN KEY (inspection_id) REFERENCES inspections(id),
+  FOREIGN KEY (inspector_id) REFERENCES inspectors(id),
+  FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
+);

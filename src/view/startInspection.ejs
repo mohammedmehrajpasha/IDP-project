@@ -2,47 +2,52 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Add Restaurant – FSSAI Inspector Hub</title>
-  <link rel="stylesheet" href="/css/addRestaurant.css" />
+  <title>Start Inspection – FSSAI Inspector Hub</title>
+  <link rel="stylesheet" href="/css/home1.css" />
+  <link rel="stylesheet" href="/css/startInspection.css" />
 </head>
 <body>
-
-<%- include('partials/header1') %>
+<%- include('partials/header') %>
 
 <section class="features">
-  <div class="container">
-    <div class="features-heading centered">
-      <h2>Add New Restaurant</h2>
-      <p>Enter the restaurant details. Zone and region are auto-assigned based on your profile.</p>
+  <div class="container form-container">
+    <h2>🧾 Inspection Form</h2>
+
+    <!-- Restaurant Details -->
+    <div class="restaurant-info">
+      <p><strong>🍽️ Name:</strong> <%= restaurant.name %></p>
+      <p><strong>📄 License:</strong> <%= restaurant.license_number %></p>
+      <p><strong>📞 Phone:</strong> <%= restaurant.phone %></p>
+      <p><strong>🏡 Address:</strong> <%= restaurant.address %></p>
     </div>
-    <% if (success) { %>
-      <div class="success-message">
-        ✅ Restaurant added successfully!
-      </div>
-    <% } %>
 
-    <form action="/inspector/restaurants/add" method="POST" class="add-form">
-      <input type="text" name="name" placeholder="Restaurant Name" required />
-      <input type="text" name="license_number" placeholder="License Number" required />
-      <input type="email" name="email" placeholder="Email" required />
-      <input type="text" name="phone" placeholder="Phone Number" required />
-      <textarea name="address" placeholder="Restaurant Address" rows="3" required></textarea>
+    <!-- Inspection Form -->
+    <form action="/inspections/start/<%= inspection.id %>" method="POST">
+      <% categories.forEach(category => { %>
+        <div class="inspection-category">
+          <h3><%= category.name %></h3>
+          <% category.items.forEach(item => { %>
+            <div class="inspection-item">
+              <label>
+                <input type="checkbox" name="<%= category.id %>[<%= item.id %>]" value="true" />
+                <span><%= item.name %></span>
+              </label>
+            </div>
+            <!-- <div class="inspection-item">
+  <label class="custom-checkbox">
+    <input type="checkbox" name="<%= category.id %>[<%= item.id %>]" />
+    <span class="checkbox-text"><%= item.name %></span>
+  </label>
+</div> -->
+          <% }) %>
+        </div>
+      <% }) %>
 
-      <!-- Zone and region shown but not editable -->
-      <input type="text" value="<%= zone %>" disabled />
-      <input type="text" value="<%= region %>" disabled />
-
-      <button type="submit" class="btn">Add Restaurant</button>
+      <button type="submit" class="btn">Submit Inspection</button>
     </form>
-
-
-    
-
-    <div style="margin-top: 20px; text-align: center;">
-      <a href="/inspector/dashboard" class="btn btn-outline">Back to Dashboard</a>
-    </div>
   </div>
 </section>
 
 <%- include('partials/footer') %>
+</body>
+</html>
