@@ -16,6 +16,11 @@
       <h2>🍽️ Restaurants & Inspections</h2>
       <p>Monitor hygiene and schedule inspections for restaurants in your zone.</p>
     </div>
+    <% if (success) { %>
+      <div class="success-message">
+        ✅ Inspection Scheduled successfully!
+      </div>
+    <% } %>
 
     <div class="inspection-table">
       <table>
@@ -35,10 +40,10 @@
               <td><%= r.name %></td>
               <td><%= r.license_number %></td>
               <td><%= r.region %></td>
-              <td><%= r.last_inspection_date || 'N/A' %></td>
+              <td><%= r.last_inspection_date ? new Date(r.last_inspection_date).toLocaleDateString() : 'N/A' %></td>
               <td><%= r.hygiene_score || 'N/A' %></td>
               <td>
-                <a href="/admin/restaurants/reports/<%= r.id %>" class="btn btn-outline">View Reports</a>
+
                 <a href="/admin/restaurants/schedule/<%= r.id %>" class="btn">Schedule</a>
               </td>
             </tr>
@@ -48,7 +53,7 @@
     </div>
 
     <div class="centered">
-      <a href="/admin/restaurants" class="btn btn-outline">← Go Back</a>
+      <a href="/admin/inspections" class="btn btn-outline">← Go Back</a>
     </div>
   </div>
 </section>
