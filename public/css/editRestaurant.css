@@ -4,8 +4,6 @@
   --border: #e5e7eb;
   --bg-light: #f9fafb;
   --white: #fff;
-  --green: #10b981;
-  --danger: #dc2626;
 }
 
 /* Base */
@@ -62,16 +60,20 @@ body {
   color: var(--black);
 }
 
-.form-group input {
+.form-group input,
+.form-group textarea,
+.form-group select {
   padding: 12px;
   border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 1rem;
-  background: #fff;
+  background: var(--white);
   transition: border 0.3s ease;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
   border-color: var(--black);
   outline: none;
 }
@@ -96,7 +98,6 @@ body {
   justify-content: center;
   cursor: pointer;
   transition: 0.3s;
-  min-width: 150px; /* ✅ Ensures consistent size across buttons */
 }
 
 .btn-black {
@@ -118,16 +119,4 @@ body {
 .btn-outline:hover {
   background-color: var(--black);
   color: white;
-}
-
-/* Success Message */
-.success-message {
-  background-color: #ecfdf5;
-  color: var(--green);
-  padding: 12px;
-  border: 1px solid #d1fae5;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  text-align: center;
-  font-weight: 500;
 }

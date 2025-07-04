@@ -52,8 +52,6 @@ app.use((err, req, res, next) => {
   res.status(500).render('error', { message: 'Something broke!' });
 });
 
-
-
 // Start server
 const PORT = 5000;
 app.listen(PORT, () => {

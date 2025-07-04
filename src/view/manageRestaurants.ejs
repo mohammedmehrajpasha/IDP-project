@@ -3,39 +3,165 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Manage Restaurants – FSSAI Inspector Hub</title>
+  <title>Manage Restaurants – Inspector Hub</title>
   <link rel="stylesheet" href="/css/manageRestaurants.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
 <%- include('partials/header1') %>
 
-<section class="features">
-  <div class="container">
-    <div class="features-heading centered">
-      <h2>Manage Restaurants</h2>
-      <p>Select a section to proceed.</p>
-    </div>
+<div class="form-wrapper">
+  <div class="heading-block">
+    <h1>Review Restaurants</h1>
+    <p>Approve, reject, manage, or restore restaurants in your zone</p>
+  </div>
 
-    <div class="features-grid">
-      <!-- 🍽️ Restaurants & Inspections -->
-      
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="pending">Pending (<%= pendingRestaurants.length %>)</button>
+    <button class="tab-btn" data-tab="approved">Approved (<%= approvedRestaurants.length %>)</button>
+    <button class="tab-btn" data-tab="deleted">Deleted (<%= deletedRestaurants.length %>)</button>
+  </div>
 
-      <!-- 🟢 Approve / Reject Restaurants -->
-      <div class="feature-card">
-        <h3>🟢 Approve / Reject Restaurants</h3>
-        <p>Approve new restaurant entries submitted by inspectors.</p>
-        <a href="/admin/restaurants/approvals" class="btn btn-outline">Go to Approvals</a>
-      </div>
-
-      <!-- ✏️ Edit / Delete Restaurants -->
-      <div class="feature-card">
-        <h3>✏️ Edit / Delete Restaurants</h3>
-        <p>Update details or remove records of existing restaurants.</p>
-        <a href="/admin/restaurants/configure" class="btn btn-outline">Go to Management</a>
-      </div>
+  <!-- Pending -->
+  <div class="tab-content active" id="pending">
+    <div class="card">
+      <h2>Pending Applications</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>License</th>
+            <th>Contact</th>
+            <th>Phone</th>
+            <th>Region</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% pendingRestaurants.forEach(r => { %>
+            <tr>
+              <td><%= r.name %></td>
+              <td><%= r.license_number %></td>
+              <td><%= r.contact_person %></td>
+              <td><%= r.phone %></td>
+              <td><%= r.region %></td>
+              <td><span class="badge gray">Pending</span></td>
+              <td class="action-btns">
+                <form action="/admin/restaurants/approve/<%= r.id %>" method="POST">
+                  <button class="icon-btn green" title="Approve"><i data-lucide="check"></i></button>
+                </form>
+                <form action="/admin/restaurants/reject/<%= r.id %>" method="POST">
+                  <button class="icon-btn red" title="Reject"><i data-lucide="x"></i></button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
     </div>
   </div>
-</section>
+
+  <!-- Approved -->
+  <div class="tab-content" id="approved">
+    <div class="card">
+      <h2>Approved Restaurants</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>License</th>
+            <th>Contact</th>
+            <th>Phone</th>
+            <th>Region</th>
+            <th>Last Inspection</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% approvedRestaurants.forEach(r => { %>
+            <tr>
+              <td><%= r.name %></td>
+              <td><%= r.license_number %></td>
+              <td><%= r.contact_person %></td>
+              <td><%= r.phone %></td>
+              <td><%= r.region %></td>
+              <td><%= r.last_inspection_date || 'Never' %></td>
+              <td class="action-btns">
+                <a href="/admin/restaurants/edit/<%= r.id %>" class="icon-btn"><i data-lucide="edit"></i></a>
+                <form action="/admin/restaurants/delete/<%= r.id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this restaurant?');">
+                  <button class="icon-btn red" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Deleted -->
+  <div class="tab-content" id="deleted">
+    <div class="card">
+      <h2>Deleted Restaurants</h2>
+      <% if (deletedRestaurants.length === 0) { %>
+        <p class="text-muted">No deleted restaurants found.</p>
+      <% } else { %>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>License</th>
+              <th>Contact</th>
+              <th>Phone</th>
+              <th>Region</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% deletedRestaurants.forEach(r => { %>
+              <tr>
+                <td><%= r.name %></td>
+                <td><%= r.license_number %></td>
+                <td><%= r.contact_person %></td>
+                <td><%= r.phone %></td>
+                <td><%= r.region %></td>
+                <td>
+                  <form action="/admin/restaurants/restore/<%= r.id %>" method="POST">
+                    <button class="icon-btn black" title="Restore">
+                      <i data-lucide="rotate-ccw"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+  </div>
+
+</div>
 
 <%- include('partials/footer') %>
+
+<script>
+  lucide.createIcons();
+
+  // Tab Switching
+  const tabs = document.querySelectorAll('.tab-btn');
+  const contents = document.querySelectorAll('.tab-content');
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabs.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      contents.forEach(c => c.classList.remove('active'));
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

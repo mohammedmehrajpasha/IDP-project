@@ -5,10 +5,30 @@ const db = require('../config/dbConnect');
 router.get('/adminLogin',(req,res)=>{
   res.render('adminLogin');
 })
-router.get('/admin/dashboard',(req,res)=>{
-  const adminName = req.session.adminName || "Admin"
-  res.render('adminDashboard',{ adminName })
-})
+router.get('/admin/dashboard', async (req, res) => {
+  const adminName = req.session.adminName;
+  const zone = req.session.zone;
+
+  const [inspectors] = await db.query('SELECT * FROM inspectors WHERE zone = ?', [zone]);
+  const [restaurants] = await db.query('SELECT * FROM restaurants WHERE zone = ?', [zone]);
+  const [reports] = await db.query('SELECT * FROM inspection_reports WHERE status="approved"');
+
+  const stats = {
+    totalInspectors: inspectors.length,
+    approvedRestaurants: restaurants.filter(r => r.status === 'approved').length,
+    pendingRestaurants: restaurants.filter(r => r.status === 'pending').length,
+    totalReports: reports.length
+  };
+
+  res.render('adminDashboard', {
+    layout: 'layout',
+    path: req.path,
+    adminName,
+    zone,
+    stats
+  });
+});
+
 router.get('/admin/inspectors',async (req, res)=>{
    const zone = req.session.zone;
 
@@ -18,14 +38,12 @@ router.get('/admin/inspectors',async (req, res)=>{
   const [inspectors] = await db.query('Select * from inspectors where zone=?',[zone])
   res.render('manageInspectors',{inspectors,zone})
 })
-router.get('/admin/reports',(req, res)=>{
-  name = 'reports'
-  res.render('manageInspectors',{name})
-})
+
 router.get('/admin/settings',(req, res)=>{
   const name = 'settings';
   res.render('manageInspectors',{name})
 })
+
 router.get('/admin/inspectors/add', (req, res) => {
   if (!req.session.zone) {
     return res.status(403).render('error', { message: 'Session expired' });
@@ -33,6 +51,7 @@ router.get('/admin/inspectors/add', (req, res) => {
   const { success } = req.query;
   res.render('addInspector',{success});
 })
+
 router.get('/admin/inspectors/edit/:id', async (req, res) => {
   const inspectorId = req.params.id;
 
@@ -47,19 +66,28 @@ router.get('/admin/inspectors/edit/:id', async (req, res) => {
     res.status(500).render('error', { message: 'Failed to load inspector data.' });
   }
 });
-router.get('/admin/restaurants',async (req, res)=>{
-  
-  res.render('manageRestaurants')
-})
 
-router.get('/admin/restaurants/approvals',async (req, res)=>{
-  const [pendingRestaurants] = await db.query('SELECT * FROM restaurants where status=?',['pending']);
-  res.render('restaurantsApproval',{pendingRestaurants})
-})
-router.get('/admin/restaurants/configure',async (req, res)=>{
-    const [approvedRestaurants] = await db.query('SELECT * FROM restaurants');
-    res.render('configureRestaurants',{approvedRestaurants});
-})
+router.get('/admin/restaurants', async (req, res) => {
+  const zone = req.session.zone;
+
+  const [restaurants] = await db.query(
+    'SELECT * FROM restaurants WHERE zone = ?', [zone]
+  );
+
+  const pendingRestaurants = restaurants.filter(r => r.status === 'pending');
+  const approvedRestaurants = restaurants.filter(r => r.status === 'approved');
+  const deletedRestaurants = restaurants.filter(r => r.status === 'rejected');
+
+  res.render('manageRestaurants', {
+    pendingRestaurants,
+    approvedRestaurants,
+    deletedRestaurants,
+    adminName: req.session.adminName,
+    zone
+  });
+});
+
+// Route: GET /admin/restaurants/edit/:id
 router.get('/admin/restaurants/edit/:id', async (req, res) => {
   const restaurantId = req.params.id;
 
@@ -70,12 +98,156 @@ router.get('/admin/restaurants/edit/:id', async (req, res) => {
       return res.status(404).render('error', { message: 'Restaurant not found' });
     }
 
-    res.render('editRestaurant', { restaurant: rows[0] });
+    const restaurant = rows[0];
+    res.render('editRestaurant', { restaurant });
   } catch (err) {
-    console.error('Error loading edit page:', err);
-    res.status(500).render('error', { message: 'Internal server error' });
+    console.error('Error loading restaurant for editing:', err);
+    res.status(500).render('error', { message: 'Failed to load restaurant details.' });
   }
 });
+
+
+router.get('/admin/restaurants', async (req, res) => {
+  const zone = req.session.zone;
+
+  const [restaurants] = await db.query('SELECT * FROM restaurants WHERE zone = ?', [zone]);
+  const pendingRestaurants = restaurants.filter(r => r.status === 'pending');
+  const approvedRestaurants = restaurants.filter(r => r.status === 'approved');
+
+  res.render('manageRestaurants', {
+    pendingRestaurants,
+    approvedRestaurants
+  });
+});
+
+// router.get('/admin/reports', async (req, res) => {
+//   const zone = req.session.zone;
+
+//   try {
+//     const [inspections] = await db.query(`
+//       SELECT 
+//         i.id AS inspection_id,
+//         r.name AS restaurant_name,
+//         r.license_number,
+//         r.region,
+//         ins.name AS inspector_name,
+//         i.inspection_date,
+//         ir.id AS report_id,
+//         ir.status AS report_status,
+//         ir.submitted_at
+//       FROM inspections i
+//       JOIN inspection_reports ir ON ir.inspection_id = i.id
+//       JOIN restaurants r ON i.restaurant_id = r.id
+//       JOIN inspectors ins ON i.inspector_id = ins.id
+//       WHERE i.status = 'Completed'
+//       AND r.zone = ?
+//       ORDER BY ir.submitted_at DESC
+//     `, [zone]);
+
+//     res.render('reviewReports', { inspections, zone });
+
+//   } catch (err) {
+//     console.error('Error loading reports:', err);
+//     res.status(500).render('error', { message: 'Failed to load inspection reports.' });
+//   }
+// });
+router.get('/admin/reports', async (req, res) => {
+  const zone = req.session.zone;
+
+  try {
+    const [inspections] = await db.query(`
+      SELECT 
+  i.id AS inspection_id,
+  r.name AS restaurant_name,
+  r.license_number,
+  ins.name AS inspector_name,
+  i.inspection_date,
+  ir.id AS report_id,
+  ir.status AS report_status
+FROM inspections i
+JOIN inspection_reports ir ON ir.inspection_id = i.id
+JOIN restaurants r ON i.restaurant_id = r.id
+JOIN inspectors ins ON i.inspector_id = ins.id
+-- REMOVE THE FILTERS FOR TESTING
+ORDER BY ir.submitted_at DESC
+    `, [zone]);
+
+    res.render('reviewReports', { inspections, zone });
+
+  } catch (err) {
+    console.error('Error loading reports:', err);
+    res.status(500).render('error', { message: 'Failed to load inspection reports.' });
+  }
+});
+
+router.get('/admin/reports/:id', async (req, res) => {
+  const [report] = await db.query('SELECT * FROM inspection_reports WHERE report_id = ?', [req.params.id]);
+  if (!report || report.length === 0) return res.status(404).send("Not found");
+
+  res.render('viewReport', { report: report[0] });
+});
+
+router.get('/admin/inspections/schedule', async (req, res) => {
+  const zone = req.session.zone;
+
+  try {
+    const [restaurants] = await db.query(`
+      SELECT id, name, license_number, region, last_inspection_date 
+      FROM restaurants 
+      WHERE zone = ? AND status = 'approved'
+    `, [zone]);
+
+    // Assign priority
+    restaurants.forEach(r => {
+      if (!r.last_inspection_date) {
+        r.priority = 'High';
+      } else {
+        const daysSince = Math.floor((Date.now() - new Date(r.last_inspection_date).getTime()) / (1000 * 60 * 60 * 24));
+        if (daysSince > 90) r.priority = 'High';
+        else if (daysSince > 60) r.priority = 'Medium';
+        else r.priority = 'Low';
+      }
+    });
+
+    const [inspectors] = await db.query(`
+      SELECT id, name, region FROM inspectors WHERE zone = ?
+    `, [zone]);
+
+    const [scheduled] = await db.query(`
+      SELECT 
+        i.id, 
+        r.name AS restaurant_name, 
+        ins.name AS inspector_name, 
+        i.inspection_date AS scheduled_date, 
+        i.status 
+      FROM inspections i
+      JOIN restaurants r ON i.restaurant_id = r.id
+      JOIN inspectors ins ON i.inspector_id = ins.id
+      WHERE r.zone = ? AND i.status IN ('Scheduled', 'Completed')
+      ORDER BY i.inspection_date DESC
+    `, [zone]);
+
+    // ✅ Calculate today's date in yyyy-mm-dd format
+    const today = new Date().toISOString().split('T')[0];
+
+    res.render('scheduleInspections', {
+      restaurants,
+      inspectors,
+      scheduled,
+      today,  // <-- ✅ pass this to the template
+      zone
+    });
+
+  } catch (err) {
+    console.error('Error loading inspections:', err);
+    res.status(500).render('error', { message: 'Failed to load inspection scheduling page.' });
+  }
+});
+
+
+
+
+
 
 
 router.post('/adminLogin',async (req, res)=>{
@@ -107,13 +279,13 @@ router.post('/admin/inspectors/add', async (req, res) => {
 
   try {
     await db.query(
-      'INSERT INTO inspectors (name, email, phone, password, zone, region) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, email, phone, password, zone, region]
+      'INSERT INTO inspectors (name, email, phone, region, zone, password) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, email, phone, region, zone, password]
     );
-    res.redirect('/admin/inspectors/add?success=1');
+    res.render('addInspector', { success: true, adminName: req.session.adminName, zone });
   } catch (err) {
-    console.error(err);
-    res.status(500).render('error', { message: 'Failed to add inspector.' });
+    console.error('Failed to add inspector:', err);
+    res.status(500).send('Internal server error');
   }
 });
 
@@ -128,78 +300,52 @@ router.post('/admin/inspectors/delete/:id', async (req, res) => {
     res.status(500).render('error', { message: 'Failed to delete inspector.' });
   }
 });
+
 router.post('/admin/inspectors/edit/:id', async (req, res) => {
-  const inspectorId = req.params.id;
+  const { id } = req.params;
   const { name, email, phone, region } = req.body;
 
   try {
     await db.query(
       'UPDATE inspectors SET name = ?, email = ?, phone = ?, region = ? WHERE id = ?',
-      [name, email, phone, region, inspectorId]
+      [name, email, phone, region, id]
     );
     res.redirect('/admin/inspectors');
-  } catch (err) {
-    console.error('Error updating inspector:', err);
-    res.status(500).render('error', { message: 'Failed to update inspector.' });
+  } catch (error) {
+    console.error('Error updating inspector:', error);
+    res.status(500).send('Internal Server Error');
   }
 });
-router.post('/admin/restaurants/approve/:id', async (req, res) => {
-  const restaurantId = req.params.id;
 
-  try {
-    await db.query(
-      'UPDATE restaurants SET status = ? WHERE id = ?',
-      ['approved', restaurantId]
-    );
-    res.redirect('/admin/restaurants/approvals');
-  } catch (err) {
-    console.error('Error approving restaurant:', err);
-    res.status(500).render('error', { message: 'Failed to approve restaurant' });
-  }
-});
-router.post('/admin/restaurants/reject/:id', async (req, res) => {
-  const restaurantId = req.params.id;
-
-  try {
-    await db.query(
-      'UPDATE restaurants SET status = ? WHERE id = ?',
-      ['rejected', restaurantId]
-    );
-    res.redirect('/admin/restaurants/approvals');
-  } catch (err) {
-    console.error('Error rejecting restaurant:', err);
-    res.status(500).render('error', { message: 'Failed to reject restaurant' });
-  }
-});
 router.post('/admin/restaurants/edit/:id', async (req, res) => {
-  const id = req.params.id;
-  const { name, license_number, email, phone, zone, region, address, status } = req.body;
-
-  try {
-    await db.query(
-      `UPDATE restaurants 
-       SET name = ?, license_number = ?, email = ?, phone = ?, zone = ?, region = ?, address = ?, status = ?
-       WHERE id = ?`,
-      [name, license_number, email, phone, zone, region, address, status, id]
-    );
-
-    res.redirect('/admin/restaurants/manage');
-  } catch (err) {
-    console.error('Error updating restaurant:', err);
-    res.status(500).render('error', { message: 'Failed to update restaurant' });
-  }
+  const { name, license_number, contact_person, phone, email, address, region, status } = req.body;
+  await db.query(
+    'UPDATE restaurants SET name=?, license_number=?, contact_person=?, phone=?, email=?, address=?, region=?, status=? WHERE id=?',
+    [name, license_number, contact_person, phone, email, address, region, status, req.params.id]
+  );
+  res.redirect('/admin/restaurants');
 });
+
 router.post('/admin/restaurants/delete/:id', async (req, res) => {
-  const id = req.params.id;
-
   try {
-    await db.query('UPDATE restaurants SET status = ? WHERE id = ?', ['rejected', id]);
-    res.redirect('/admin/restaurants/configure');
+    await db.query('UPDATE restaurants SET status = "rejected" WHERE id = ?', [req.params.id]);
+    res.redirect('/admin/restaurants');
   } catch (err) {
-    console.error('Error deleting restaurant:', err);
-    res.status(500).render('error', { message: 'Failed to delete restaurant' });
+    console.error('Soft delete failed:', err);
+    res.status(500).send('Internal Server Error');
   }
 });
+
+router.post('/admin/restaurants/restore/:id', async (req, res) => {
+  try {
+    await db.query('UPDATE restaurants SET status = "approved" WHERE id = ?', [req.params.id]);
+    res.redirect('/admin/restaurants');
+  } catch (err) {
+    console.error('Restore failed:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 
 
 
@@ -263,6 +409,59 @@ router.get('/admin/restaurants/view', async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
+router.post('/admin/reports/approve/:id', async (req, res) => {
+  await db.query('UPDATE inspection_reports SET status = "approved", reviewed_at = NOW() WHERE report_id = ?', [req.params.id]);
+  res.redirect('/admin/reports');
+});
+
+router.post('/admin/reports/reject/:id', async (req, res) => {
+  await db.query('UPDATE inspection_reports SET status = "rejected", reviewed_at = NOW() WHERE report_id = ?', [req.params.id]);
+  res.redirect('/admin/reports');
+});
+
+router.post('/admin/inspections/schedule', async (req, res) => {
+  const { restaurant_id, inspector_id, inspection_date } = req.body;
+
+  try {
+    await db.query(`
+      INSERT INTO inspections (restaurant_id, inspector_id, inspection_date, status)
+      VALUES (?, ?, ?, 'Scheduled')
+    `, [restaurant_id, inspector_id, inspection_date]);
+
+    res.redirect('/admin/inspections/schedule');
+  } catch (err) {
+    console.error('Error scheduling inspection:', err);
+    res.status(500).render('error', { message: 'Failed to schedule inspection.' });
+  }
+});
+
+router.post('/admin/inspections/delete/:id', async (req, res) => {
+  const inspectionId = req.params.id;
+
+  try {
+    await db.query('DELETE FROM inspections WHERE id = ?', [inspectionId]);
+    res.redirect('/admin/inspections/schedule');
+  } catch (err) {
+    console.error('Error deleting inspection:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+router.post('/admin/restaurants/approve/:id', async (req, res) => {
+  await db.query('UPDATE restaurants SET status = "approved" WHERE id = ?', [req.params.id]);
+  res.redirect('/admin/restaurants');
+});
+
+
+router.post('/admin/restaurants/reject/:id', async (req, res) => {
+  await db.query('UPDATE restaurants SET status = "rejected" WHERE id = ?', [req.params.id]);
+  res.redirect('/admin/restaurants');
+});
+router.get('/admin/restaurants/approvals',async (req, res)=>{
+  const [pendingRestaurants] = await db.query('SELECT * FROM restaurants where status=?',['pending']);
+  res.render('restaurantsApproval',{pendingRestaurants})
+})
+
 
 
 

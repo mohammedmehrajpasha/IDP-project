@@ -3,37 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Edit Inspector – FSSAI Inspector Hub</title>
+  <title>Edit Inspector – Inspector Hub</title>
   <link rel="stylesheet" href="/css/addInspector.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
 <%- include('partials/header1') %>
 
-<section class="features">
-  <div class="container">
-    
-    <div class="centered">
-      <div class="features-heading">
-        <h2>Edit Inspector</h2>
-        <p>Update inspector details below.</p>
-      </div>
-    </div>
-
-    <form action="/admin/inspectors/edit/<%= inspector.id %>" method="POST" class="add-form">
-      <input type="text" name="name" value="<%= inspector.name %>" required>
-      <input type="email" name="email" value="<%= inspector.email %>" required>
-      <input type="text" name="phone" value="<%= inspector.phone %>" required>
-      <input type="text" name="region" value="<%= inspector.region %>" required>
-      <button type="submit" class="btn">Update</button>
-    </form>
-
-    <div class="centered" style="margin-top: 20px;">
-      <a href="/admin/inspectors" class="btn btn-outline">Back to Inspector List</a>
-    </div>
-    
+<div class="form-wrapper">
+  <div class="form-header">
+    <h1>Edit Inspector</h1>
+    <p>Update the details for this inspector below.</p>
   </div>
-</section>
 
+  <form class="form-card" method="POST" action="/admin/inspectors/edit/<%= inspector.id %>">
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" value="<%= inspector.name %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" value="<%= inspector.email %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="phone">Phone Number</label>
+      <input type="text" id="phone" name="phone" value="<%= inspector.phone %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="region">Region</label>
+      <input type="text" id="region" name="region" value="<%= inspector.region %>" required>
+    </div>
+
+    <div class="form-footer">
+      <button type="submit" class="btn btn-black">Update Inspector</button>
+      <a href="/admin/inspectors" class="btn btn-outline">← Back to List</a>
+    </div>
+  </form>
+</div>
 
 <%- include('partials/footer') %>
+
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>

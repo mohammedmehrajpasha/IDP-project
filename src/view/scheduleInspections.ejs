@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Schedule Inspections – Inspector Hub</title>
+  <link rel="stylesheet" href="/css/scheduleInspections.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<%- include('partials/header1') %>
+
+<div class="form-wrapper">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1><i data-lucide="calendar-check" class="icon"></i> Schedule Inspections</h1>
+    <p>Schedule inspections for restaurants in your zone</p>
+  </div>
+
+  <!-- Restaurants Needing Inspection -->
+  <div class="card">
+    <h2><i data-lucide="clock" class="icon"></i> Restaurants Requiring Inspection</h2>
+    <p class="subtitle">Sorted by last inspection date</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th><i data-lucide="store" class="icon-sm"></i>Name</th>
+          <th><i data-lucide="file-badge" class="icon-sm"></i>License</th>
+          <th><i data-lucide="map-pin" class="icon-sm"></i>Region</th>
+          <th><i data-lucide="calendar-days" class="icon-sm"></i>Last Inspection</th>
+          <!-- <th><i data-lucide="alert-octagon" class="icon-sm"></i>Priority</th> -->
+          <th><i data-lucide="plus" class="icon-sm"></i>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% restaurants.forEach(r => { %>
+          <tr>
+            <td><%= r.name %></td>
+            <td><%= r.license_number %></td>
+            <td><%= r.region %></td>
+            <td><%= r.last_inspection_date ? new Date(r.last_inspection_date).toLocaleDateString() : 'Never' %></td>
+            <!-- <td>
+              <% if (r.priority) { %>
+                <span class="badge <%= r.priority.toLowerCase() %>"><%= r.priority %></span>
+              <% } else { %>
+                <span class="badge gray">Unknown</span>
+              <% } %>
+            </td> -->
+            <td>
+              <form action="/admin/inspections/schedule" method="POST" class="inline-form">
+                <input type="hidden" name="restaurant_id" value="<%= r.id %>">
+                <select name="inspector_id" required>
+                  <option value="">Inspector</option>
+                  <% inspectors.forEach(ins => { %>
+                    <option value="<%= ins.id %>"><%= ins.name %> – <%= ins.region %></option>
+                  <% }) %>
+                </select>
+                <input type="date" name="inspection_date" min="<%= today %>" required>
+                <button type="submit" class="btn btn-black">
+                  <i data-lucide="calendar-plus" class="icon-sm"></i> Schedule
+                </button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Scheduled Inspections -->
+  <div class="card">
+    <h2><i data-lucide="list-checks" class="icon"></i> Scheduled Inspections</h2>
+    <table>
+      <thead>
+        <tr>
+          <th><i data-lucide="store" class="icon-sm"></i> Restaurant</th>
+          <th><i data-lucide="user-check" class="icon-sm"></i> Inspector</th>
+          <th><i data-lucide="calendar-days" class="icon-sm"></i> Date</th>
+          <th><i data-lucide="activity" class="icon-sm"></i> Status</th>
+          <th><i data-lucide="plus" class="icon-sm"></i> Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% scheduled.forEach(i => { %>
+          <tr>
+            <td><%= i.restaurant_name %></td>
+            <td><%= i.inspector_name %></td>
+            <td><%= new Date(i.scheduled_date).toLocaleDateString() %></td>
+            <td><span class="badge <%= i.status.toLowerCase().replace(' ', '-') %>"><%= i.status.replace('-', ' ') %></span></td>
+            <td>
+            <form action="/admin/inspections/delete/<%= i.id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this scheduled inspection?');" style="display:inline;">
+              <button type="submit" class="icon-btn delete" title="Delete">
+              <i data-lucide="trash-2"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>

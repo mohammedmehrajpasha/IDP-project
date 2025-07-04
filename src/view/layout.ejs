@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= typeof title !== 'undefined' ? title : 'FSSAI Inspector Hub' %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/layout.css" />
+</head>
+
+<body>
+
+  <!-- Header (Toggler inside this) -->
+  <%- include('partials/header1', { adminName, zone }) %>
+
+  <!-- Layout wrapper -->
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <%- include('partials/sidebar') %>
+
+    <!-- Main content area -->
+    <main class="main-content">
+      <%- body %>
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <%- include('partials/footer') %>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initialize icons
+    lucide.createIcons();
+
+    // Attach event listener for toggler
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const sidebar = document.querySelector('.sidebar');
+
+    if (toggleBtn && sidebar) {
+      toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+      });
+    }
+  });
+</script>
+
+
+</body>
+</html>

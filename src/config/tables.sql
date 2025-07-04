@@ -92,22 +92,24 @@ VALUES
 (10, 'Spice Hub114', 'LIC12346', 'spicehub@gmail.com', '9876543210', 'Banglore South', 'Kengeri', '12, Kengeri Main Rd', 'approved', 101);
 
 CREATE TABLE inspections (
-    id INT NOT NULL AUTO_INCREMENT,
-    restaurant_id INT NOT NULL,
-    inspector_id INT NOT NULL,
-    status ENUM('Scheduled', 'Not-Scheduled','Completed') NOT NULL,
-    last_inspection DATE NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (restaurant_id) REFERENCES restaurants(id),
-    FOREIGN KEY (inspector_id) REFERENCES inspectors(id)
+  id INT NOT NULL AUTO_INCREMENT,
+  restaurant_id INT NOT NULL,
+  inspector_id INT NOT NULL,
+  inspection_date DATE DEFAULT NULL, -- The scheduled date
+  status ENUM('Scheduled', 'Not-Scheduled', 'Completed') NOT NULL DEFAULT 'Not-Scheduled',
+  last_inspection DATE DEFAULT NULL, -- The date the inspection was actually completed
+  PRIMARY KEY (id),
+  FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE,
+  FOREIGN KEY (inspector_id) REFERENCES inspectors(id) ON DELETE CASCADE
 );
 
- INSERT INTO inspections (restaurant_id, inspector_id, status, last_inspection) VALUES
- (1, 1, 'Scheduled', '2025-06-10'),
- (2, 1, 'Not-Scheduled', '2025-06-05'),
- (3, 1, 'Scheduled', '2025-05-30'),
- (4, 1, 'Not-Scheduled', '2025-05-20'),
- (8, 1, 'Scheduled', '2025-06-11');
+INSERT INTO inspections (restaurant_id, inspector_id, status, last_inspection, inspection_date) VALUES
+(1, 1, 'Scheduled', '2025-06-10', '2025-06-12'),
+(2, 1, 'Not-Scheduled', '2025-06-05', NULL),
+(3, 1, 'Scheduled', '2025-05-30', '2025-06-14'),
+(4, 1, 'Not-Scheduled', '2025-05-20', NULL),
+(8, 2, 'Scheduled', '2025-06-11', '2025-06-15');
+
 
 CREATE TABLE inspection_reports (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -121,8 +123,6 @@ CREATE TABLE inspection_reports (
   FOREIGN KEY (inspector_id) REFERENCES inspectors(id),
   FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
 );
-
-drop table users;
 
 CREATE TABLE users (
     name VARCHAR(100) NOT NULL,

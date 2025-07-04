@@ -1,0 +1,181 @@
+:root {
+  --black: #111;
+  --gray: #6b7280;
+  --bg-light: #f9fafb;
+  --white: #fff;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --green: #10b981;
+  --blue: #3b82f6;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--bg-light);
+  color: var(--black);
+  margin: 0;
+  padding: 0;
+}
+
+.form-wrapper {
+  max-width: 1250px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.page-header {
+  margin-bottom: 30px;
+}
+
+.page-header h1 {
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card {
+  background-color: var(--white);
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-bottom: 30px;
+}
+
+.card h2 {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subtitle {
+  color: var(--gray);
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+th, td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+th {
+  background-color: #f3f4f6;
+  color: var(--black);
+  font-weight: 600;
+}
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.inline-form select,
+.inline-form input[type="date"] {
+  padding: 8px;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.btn {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-black {
+  background-color: var(--black);
+  color: white;
+}
+
+.btn-black:hover {
+  background-color: #000;
+}
+
+/* Priority Badges */
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+  text-align: center;
+}
+
+.badge.high {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.badge.medium {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.badge.low {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.badge.scheduled {
+  background-color: #c7d2fe;
+  color: #3730a3;
+}
+
+.badge.completed {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.badge.gray {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+/* Icons */
+.icon {
+  height: 20px;
+  width: 20px;
+  vertical-align: middle;
+}
+
+.icon-sm {
+  height: 16px;
+  width: 16px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.icon-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 6px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.icon-btn.delete {
+  color: var(--red);
+}
+
+.icon-btn.delete:hover {
+  background-color: rgba(220, 38, 38, 0.1);
+}

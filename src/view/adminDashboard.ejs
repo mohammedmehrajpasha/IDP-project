@@ -2,74 +2,132 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Dashboard – FSSAI Inspector Hub</title>
-  <link rel="stylesheet" href="/css/home1.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/adminDashboard.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
-  <!-- Navbar -->
-  <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>FSSAI Inspector Hub</title>
-  <link rel="stylesheet" href="/css/partials.css" />
-</head>
-<body>
+<%- include('partials/header1') %>
 
-  <!-- Navigation -->
-  <nav class="navbar">
-    <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+<div class="dashboard-container">
 
-      <!-- Logo -->
-      <div class="logo">
-        FSSAI <span>Inspector Hub</span>
-      </div>
+  <!-- Greeting & Status -->
+  <div class="dashboard-header">
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p>Welcome back, <%= adminName %></p>
+      <span class="zone">Managing: <%= zone %></span>
+    </div>
+    <div class="status">
+      <i data-lucide="activity" class="lucide-icon green"></i>
+      <span>System Status: Active</span>
+    </div>
+  </div>
 
-      <!-- Logout Button -->
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card blue">
       <div>
-        <a href="/logout" class="btn btn-outline">Logout</a>
+        <p>Total Inspectors</p>
+        <h2 class="stat-value"><%= stats.totalInspectors %></h2>
       </div>
-
+      <div class="stat-icon"><i data-lucide="users" class="lucide-icon blue"></i></div>
     </div>
-  </nav>
+    <div class="stat-card green">
+      <div>
+        <p>Registered Restaurants</p>
+        <h2 class="stat-value"><%= stats.approvedRestaurants %></h2>
+      </div>
+      <div class="stat-icon"><i data-lucide="building-2" class="lucide-icon green"></i></div>
+    </div>
+    <div class="stat-card orange">
+      <div>
+        <p>Pending Approvals</p>
+        <h2 class="stat-value"><%= stats.pendingRestaurants %></h2>
+      </div>
+      <div class="stat-icon"><i data-lucide="alert-triangle" class="lucide-icon orange"></i></div>
+    </div>
+    <div class="stat-card purple">
+      <div>
+        <p>Reports This Month</p>
+        <h2 class="stat-value"><%= stats.totalReports %></h2>
+      </div>
+      <div class="stat-icon"><i data-lucide="file-text" class="lucide-icon purple"></i></div>
+    </div>
+  </div>
 
-  <!-- Main Dashboard Section -->
-  <section class="features">
-    <div class="container">
-      <div class="features-heading">
-        <h2>Welcome, <%= adminName%></h2>
-        <p>Manage inspectors, inspections, and system settings from one place.</p>
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="actions-grid">
+      <a href="/admin/inspectors" class="action-card">
+        <i data-lucide="users" class="lucide-icon icon-box blue-bg"></i>
+        <div>
+          <h4>Manage Inspectors</h4>
+          <p>Add, edit, or remove inspectors in your zone</p>
+        </div>
+      </a>
+
+      <a href="/admin/restaurants" class="action-card">
+        <i data-lucide="building-2" class="lucide-icon icon-box green-bg"></i>
+        <div>
+          <h4>Review Restaurant Applications</h4>
+          <p>Approve or reject new restaurant registrations</p>
+        </div>
+      </a>
+
+      <a href="/admin/reports" class="action-card">
+        <i data-lucide="file-text" class="lucide-icon icon-box purple-bg"></i>
+        <div>
+          <h4>Review Inspection Reports</h4>
+          <p>Review and approve submitted inspection reports</p>
+        </div>
+      </a>
+
+      <a href="/admin/inspections/schedule" class="action-card">
+        <i data-lucide="calendar" class="lucide-icon icon-box orange-bg"></i>
+        <div>
+          <h4>Schedule Inspections</h4>
+          <p>Assign inspectors to restaurant inspections</p>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="recent-activity">
+    <h3>Recent Activity</h3>
+    <div class="activity-list">
+      <div class="activity-item blue-light">
+        <i data-lucide="file-text" class="lucide-icon blue"></i>
+        <div>
+          <p class="title">New inspection report submitted</p>
+          <p class="desc">Spice Garden Restaurant - Inspector Raj Kumar</p>
+        </div>
+        <span class="timestamp">2 hours ago</span>
       </div>
 
-      <div class="features-grid">
-        <div class="feature-card">
-          <h3>Manage Inspectors</h3>
-          <p>Add, assign, and deactivate FSSAI inspectors across regions.</p>
-          <a href="/admin/inspectors" class="btn btn-outline">View Inspectors</a>
+      <div class="activity-item green-light">
+        <i data-lucide="building-2" class="lucide-icon green"></i>
+        <div>
+          <p class="title">New restaurant application</p>
+          <p class="desc">Coffee Corner Café - Pending approval</p>
         </div>
-
-        <div class="feature-card">
-          <h3>Manage Restaurants</h3>
-          <p>Oversee restaurant records and FSSAI compliance data.</p>
-          <a href="/admin/restaurants" class="btn btn-outline">View Restaurants</a>
-        </div>
-
-        
-
-        <div class="feature-card">
-          <h3>Schedule / View Inspections</h3>
-          <p>Assign inspections to inspectors and review submitted inspection reports.</p>
-          <a href="/admin/inspections" class="btn btn-outline">Manage Inspections</a>
-        </div>
-        
+        <span class="timestamp">1 day ago</span>
       </div>
     </div>
-  </section>
+  </div>
 
-  <%- include('partials/footer') %>
+</div>
+
+<%- include('partials/footer') %>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  lucide.createIcons();
+</script>
+
 
 </body>
 </html>

@@ -1,44 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit Restaurant – FSSAI Inspector Hub</title>
-  <link rel="stylesheet" href="/css/manageRestaurants.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Restaurant – Inspector Hub</title>
+  <link rel="stylesheet" href="/css/editRestaurant.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
 <%- include('partials/header1') %>
 
-<section class="features">
-  <div class="container">
-    <div class="features-heading centered">
-      <h2>✏️ Edit Restaurant</h2>
-      <p>Update restaurant details below.</p>
+<div class="form-wrapper">
+  <div class="form-header">
+    <h1>Edit Restaurant</h1>
+    <p>Modify the details of the restaurant below.</p>
+  </div>
+
+  <form class="form-card" method="POST" action="/admin/restaurants/edit/<%= restaurant.id %>">
+    <div class="form-group">
+      <label for="name">Restaurant Name</label>
+      <input type="text" id="name" name="name" value="<%= restaurant.name %>" required>
     </div>
 
-    <form action="/admin/restaurants/edit/<%= restaurant.id %>" method="POST" class="add-form">
-      <input type="text" name="name" placeholder="Restaurant Name" value="<%= restaurant.name %>" required>
-      <input type="text" name="license_number" placeholder="License Number" value="<%= restaurant.license_number %>" required>
-      <input type="email" name="email" placeholder="Email" value="<%= restaurant.email %>" required>
-      <input type="text" name="phone" placeholder="Phone Number" value="<%= restaurant.phone %>" required>
-      <input type="text" name="zone" placeholder="Zone" value="<%= restaurant.zone %>" required>
-      <input type="text" name="region" placeholder="Region" value="<%= restaurant.region %>" required>
-      <textarea name="address" placeholder="Address" rows="3" required><%= restaurant.address %></textarea>
+    <div class="form-group">
+      <label for="license">License Number</label>
+      <input type="text" id="license" name="license_number" value="<%= restaurant.license_number %>" required>
+    </div>
 
-      <select name="status" required>
+    <div class="form-group">
+      <label for="contact_person">Contact Person</label>
+      <input type="text" id="contact_person" name="contact_person" value="<%= restaurant.contact_person %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" value="<%= restaurant.email %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="phone">Phone</label>
+      <input type="text" id="phone" name="phone" value="<%= restaurant.phone %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="zone">Zone</label>
+      <input type="text" id="zone" name="zone" value="<%= restaurant.zone %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="region">Region</label>
+      <input type="text" id="region" name="region" value="<%= restaurant.region %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="address">Address</label>
+      <textarea id="address" name="address" rows="3" required><%= restaurant.address %></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="status">Status</label>
+      <select name="status" id="status" required>
         <option value="pending" <%= restaurant.status === 'pending' ? 'selected' : '' %>>Pending</option>
         <option value="approved" <%= restaurant.status === 'approved' ? 'selected' : '' %>>Approved</option>
         <option value="rejected" <%= restaurant.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
       </select>
-
-      <button type="submit" class="btn">Update Restaurant</button>
-    </form>
-
-    <div class="centered" style="margin-top: 20px;">
-      <a href="/admin/restaurants/configure" class="btn btn-outline">← Go Back</a>
     </div>
-  </div>
-</section>
+
+    <div class="form-footer">
+      <button type="submit" class="btn btn-black">Update Restaurant</button>
+      <a href="/admin/restaurants" class="btn btn-outline">← Back to List</a>
+    </div>
+  </form>
+</div>
 
 <%- include('partials/footer') %>
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>
