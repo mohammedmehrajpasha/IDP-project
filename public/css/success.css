@@ -1,0 +1,20 @@
+.success-message {
+  margin: 50px auto;
+  text-align: center;
+  color: #27ae60;
+  font-size: 1.5rem;
+}
+
+.success-message .btn {
+  margin-top: 20px;
+  display: inline-block;
+  padding: 10px 20px;
+  background: #4947ee;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.success-message .btn:hover {
+  background: #030c74;
+}

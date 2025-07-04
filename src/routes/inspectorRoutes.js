@@ -255,46 +255,58 @@ router.get('/inspections/start/:id', async (req, res) => {
     }
   });
 
+
   router.post('/inspections/start/:id', async (req, res) => {
-  const inspectionId = req.params.id;
-  const inspectorId = req.session.ID; // assumes session stores login
-  const formData = req.body;
-
-  try {
-    // Get restaurant ID from inspection
-    const [[inspection]] = await db.query(
-      `SELECT * FROM inspections WHERE id = ?`, [inspectionId]);
-
-    if (!inspection) {
-      return res.status(404).render('error', { message: 'Invalid inspection ID' });
-    }
-
-    // Build JSON from checkbox data
-    const report = {};
-
-    for (const category in formData) {
-      report[category] = {};
-      for (const item in formData[category]) {
-        report[category][item] = true; // checkbox means compliant
+    const inspectionId = req.params.id;
+    const inspectorId = req.session.ID; // assumes you have a login with a session
+    const formData = req.body;
+  
+    try {
+      // Get restaurant ID from inspection
+      const [[inspection]] = await db.query(
+        `SELECT * FROM inspections WHERE id = ?`,
+        [inspectionId]
+      );
+  
+      if (!inspection) {
+        return res.status(404).render('error', { message: 'Invalid inspection ID' });
       }
+  
+      // Build JSON from checkbox data
+      const report = {};
+  
+      for (const category in formData) {
+        if (category !== 'notes') { // exclude notes from report
+          report[category] = {};
+  
+          for (const item in formData[category]) {
+            report[category][item] = true;
+          }
+        }
+      }
+      const notes = formData.notes || '';
+      // Insert into inspection_reports with notes
+      await db.query(
+        ` INSERT INTO inspection_reports 
+          (inspection_id, inspector_id, restaurant_id, report_json, notes) 
+          VALUES (?, ?, ?, ?, ?)`,
+        [inspectionId, inspectorId, inspection.restaurant_id, JSON.stringify(report), notes]
+      );
+  
+      // Update inspection's status to Completed
+      await db.query(
+        `UPDATE inspections SET status = 'Completed' WHERE id = ?`,
+        [inspectionId]
+      );
+  
+      
+return res.render('success', { message: 'Inspection successfully submitted!' });
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).render('error', { message: 'Failed to submit inspection' });
     }
-
-    // Insert into inspection_reports
-    await db.query(`
-      INSERT INTO inspection_reports 
-      (inspection_id, inspector_id, restaurant_id, report_json)
-      VALUES (?, ?, ?, ?)
-    `, [inspectionId, inspectorId, inspection.restaurant_id, JSON.stringify(report)]);
-
-    // Mark inspection as Completed
-    await db.query(`UPDATE inspections SET status = 'Completed' WHERE id = ?`, [inspectionId]);
-
-    res.redirect('/inspector/dashboard');
-  } catch (err) {
-    console.error(err);
-    res.status(500).render('error', { message: 'Failed to submit inspection' });
-  }
-});
-
+  });
+  
 
 module.exports = router; 
