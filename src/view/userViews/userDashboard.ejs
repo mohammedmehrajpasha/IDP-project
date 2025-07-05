@@ -1,0 +1,66 @@
+<!-- views/userDashboard.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="/css/userDashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <%- include('../partials/header3') %>
+  <div class="container">
+  
+    <header>
+      <h1>Welcome, <%= user.name %>!</h1>
+      <p>Discover safe and hygienic restaurants in your area</p>
+    </header>
+
+    <section class="stats">
+      <div class="card">
+        <h3>Total Restaurants <i class="fas fa-chart-line"></i></h3>
+        <p class="value"><%= stats.totalRestaurants %></p>
+        <p class="desc">Approved establishments</p>
+      </div>
+      <div class="card">
+        <h3>Favorites <i class="fas fa-heart"></i></h3>
+        <p class="value"><%= stats.favoriteCount %></p>
+        <p class="desc">Bookmarked restaurants</p>
+      </div>
+      <div class="card">
+        <h3>Complaints <i class="fas fa-comment"></i></h3>
+        <p class="value"><%= stats.complaintsCount %></p>
+        <p class="desc">Filed complaints</p>
+      </div>
+    </section>
+
+    <section class="quick-actions">
+      <h2>Quick Actions</h2>
+      <div class="actions">
+        <a href="/user/search" class="action blue">
+          <i class="fas fa-search"></i>
+          <div>
+            <h4>Search Restaurants</h4>
+            <p>Find restaurants in your area</p>
+          </div>
+        </a>
+        <a href="/user/favorites" class="action red">
+          <i class="fas fa-heart"></i>
+          <div>
+            <h4>My Favorites</h4>
+            <p>View bookmarked restaurants</p>
+          </div>
+        </a>
+        <a href="/user/complaints" class="action orange">
+          <i class="fas fa-comment"></i>
+          <div>
+            <h4>File Complaint</h4>
+            <p>Report issues about restaurants</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+  </div>
+</body>
+</html>

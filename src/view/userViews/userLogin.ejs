@@ -17,6 +17,12 @@
       <h1>FSSAI Inspector Hub</h1>
       <p>Food Safety & Standards Authority of India</p>
 
+      <% if (typeof error !== 'undefined') { %>
+        <div class="error-message" style="color: red; margin-bottom: 10px;">
+          <%= error %>
+        </div>
+      <% } %>
+
       <form action="/userLogin" method="POST" class="mt-6">
         <div class="form-group">
           <label for="email">Email Address</label>
