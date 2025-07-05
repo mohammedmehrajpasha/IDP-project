@@ -1,0 +1,247 @@
+:root {
+  --black: #111;
+  --gray: #6b7280;
+  --bg-light: #f9fafb;
+  --white: #fff;
+  --blue: #2563eb;
+  --green: #16a34a;
+  --orange: #ea580c;
+  --red: #dc2626;
+}
+
+/* Base */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--bg-light);
+  margin: 0;
+  color: var(--black);
+}
+
+.dashboard-container {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+/* Header */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+}
+
+.dashboard-header h1 {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.sub {
+  font-size: 0.95rem;
+  color: var(--gray);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+}
+
+.status .black {
+  color: var(--black);
+}
+
+/* Search Bar */
+.search-bar {
+  width: 100%;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  font-size: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+
+.search-bar .lucide-icon {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 18px;
+  height: 18px;
+  color: var(--gray);
+}
+
+/* Reports */
+.reports-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.report-card {
+  background-color: var(--white);
+  padding: 20px 22px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.report-header .left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.report-header .left h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.report-header .left p {
+  font-size: 0.85rem;
+  color: var(--gray);
+  margin-top: 3px;
+}
+
+.report-header .right {
+  display: flex;
+  gap: 10px;
+}
+
+/* Report body */
+.report-body {
+  display: flex;
+  justify-content: space-between;
+  color: var(--gray);
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.report-body .lucide-icon {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+/* Footer */
+.report-footer {
+  text-align: right;
+}
+
+.btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.btn-outline {
+  border: 1px solid var(--black);
+  color: var(--black);
+  background-color: transparent;
+}
+
+.btn-outline:hover {
+  background-color: var(--black);
+  color: white;
+}
+
+/* Badges */
+.badge {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge.approved {
+  background-color: #dcfce7;
+  color: var(--green);
+}
+
+.badge.pending {
+  background-color: #fef3c7;
+  color: var(--orange);
+}
+
+.badge.score.green {
+  background-color: #d1fae5;
+  color: var(--green);
+}
+.badge.score.orange {
+  background-color: #fef3c7;
+  color: var(--orange);
+}
+.badge.score.red {
+  background-color: #fee2e2;
+  color: var(--red);
+}
+
+/* Icons */
+.lucide-icon {
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
+}
+
+.lucide-icon.small {
+  width: 16px;
+  height: 16px;
+}
+
+/* Empty state */
+.no-reports {
+  text-align: center;
+  padding: 50px;
+  color: var(--gray);
+}
+
+.tabs {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: 2px solid var(--black);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab-btn.active,
+.tab-btn:hover {
+  background-color: var(--black);
+  color: white;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}

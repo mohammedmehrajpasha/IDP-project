@@ -53,9 +53,11 @@
                 <input type="hidden" name="restaurant_id" value="<%= r.id %>">
                 <select name="inspector_id" required>
                   <option value="">Inspector</option>
-                  <% inspectors.forEach(ins => { %>
+                  <% inspectors.filter(ins => ins.region === r.region).forEach(ins => { %>
                     <option value="<%= ins.id %>"><%= ins.name %> – <%= ins.region %></option>
                   <% }) %>
+                </select>
+
                 </select>
                 <input type="date" name="inspection_date" min="<%= today %>" required>
                 <button type="submit" class="btn btn-black">
@@ -103,8 +105,6 @@
   </div>
 
 </div>
-
-<%- include('partials/footer') %>
 <script>
   lucide.createIcons();
 </script>

@@ -3,7 +3,23 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const qs = require('qs'); 
 const db = require('../config/dbConnect');
+
+const { checklistSchema, sectionLabels } = require('../data/inspectionCategories');
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'D:/images');
+    },
+    filename: function (req, file, cb) {
+      const unique = Date.now() + '-' + file.originalname;
+      cb(null, unique);
+    }
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 }
+});
 
 router.get('/inspectorLogin',(req,res)=>{
     res.render('inspectorLogin');
@@ -180,63 +196,6 @@ router.get('/inspector/restaurants', async (req, res) => {
   }
 });
 
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'D:/images');
-    },
-    filename: function (req, file, cb) {
-      const unique = Date.now() + '-' + file.originalname;
-      cb(null, unique);
-    }
-  }),
-  limits: { fileSize: 10 * 1024 * 1024 }
-});
-
-
-// Checklist schema
-const checklistSchema = {
-  personalHygiene: {
-    handsClean: 'Staff hands are clean and washed regularly',
-    uniformClean: 'Staff uniforms are clean and appropriate',
-    hairCovered: 'Hair is properly covered during food handling',
-    noJewelry: 'No jewelry worn during food preparation'
-  },
-  premisesCleanliness: {
-    floorsClean: 'Floors are clean and well-maintained',
-    wallsClean: 'Walls are clean and free from stains',
-    ceilingsClean: 'Ceilings are clean and well-maintained',
-    tablesClean: 'Tables and surfaces are properly sanitized'
-  },
-  foodStorage: {
-    temperatureControlled: 'Food stored at appropriate temperatures',
-    separateRawCooked: 'Raw and cooked foods stored separately',
-    properLabeling: 'Food items are properly labeled with dates',
-    noExpiredItems: 'No expired food items found'
-  },
-  equipment: {
-    cleanUtensils: 'Utensils are clean and properly stored',
-    workingRefrigeration: 'Refrigeration equipment working properly',
-    properSanitization: 'Equipment is properly sanitized',
-    maintenanceUpToDate: 'Equipment maintenance is up to date'
-  },
-  wasteManagement: {
-    properDisposal: 'Waste is disposed of properly',
-    coveredBins: 'Waste bins are covered and clean',
-    regularCollection: 'Regular waste collection schedule followed',
-    pestControl: 'Effective pest control measures in place'
-  }
-};
-
-// Labels for rendering titles in EJS
-const sectionLabels = {
-  personalHygiene: 'Personal Hygiene',
-  premisesCleanliness: 'Premises Cleanliness',
-  foodStorage: 'Food Storage',
-  equipment: 'Equipment & Utensils',
-  wasteManagement: 'Waste Management'
-};
-
 // GET route to render the inspection form
 router.get('/inspection/start/:id', async (req, res) => {
   const inspectionId = req.params.id;
@@ -275,7 +234,7 @@ router.get('/inspection/start/:id', async (req, res) => {
     }
 
     // Initial hygiene score is 0.0
-    const hygieneScore = 0.0;
+    const hygieneScore = restaurant.hygiene_score;
 
     // Badge color logic
     const scoreBadge =
@@ -302,17 +261,45 @@ router.get('/inspection/start/:id', async (req, res) => {
 
 
 router.post('/inspection/submit/:id', upload.array('images'), async (req, res) => {
-  const { checklist, notes, latitude, longitude } = req.body;
+  const formData = qs.parse(req.body);
+  const checklist = formData.checklist;
+  const { notes, latitude, longitude } = formData;
   const inspectionId = req.params.id;
-  const inspectorId = req.session.ID; // assuming login
+  const inspectorId = req.session.ID;
   const restaurantId = req.session.restaurant_id;
 
   const images = req.files.map(f => f.filename);
 
+  // ✅ Calculate hygiene score
+  let totalChecked = 0;
+  let totalItems = 0;
+
+  for (const category in checklist) {
+    for (const item in checklist[category]) {
+      totalItems++;
+      if (checklist[category][item] === 'on') {
+        totalChecked++;
+      }
+    }
+  }
+
+  // Total possible items: 20
+  const hygieneScore = parseFloat(((totalChecked / 20) * 5).toFixed(2));
+
   try {
     await db.query(`
-      INSERT INTO inspection_reports (inspection_id, inspector_id, restaurant_id, report_json, notes, image_paths, latitude, longitude)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO inspection_reports (
+        inspection_id,
+        inspector_id,
+        restaurant_id,
+        report_json,
+        notes,
+        image_paths,
+        latitude,
+        longitude,
+        hygiene_score
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       inspectionId,
       inspectorId,
@@ -321,11 +308,14 @@ router.post('/inspection/submit/:id', upload.array('images'), async (req, res) =
       notes,
       JSON.stringify(images),
       latitude || null,
-      longitude || null
+      longitude || null,
+      hygieneScore
     ]);
 
-    // Update inspection status
-    await db.query(`UPDATE inspections SET status = 'Completed', last_inspection = NOW() WHERE id = ?`, [inspectionId]);
+    await db.query(
+      `UPDATE inspections SET status = 'Completed', last_inspection = NOW() WHERE id = ?`,
+      [inspectionId]
+    );
 
     res.redirect('/inspector/inspections/scheduled');
   } catch (err) {
@@ -335,95 +325,202 @@ router.post('/inspection/submit/:id', upload.array('images'), async (req, res) =
 });
 
 
-// router.get('/inspections/start/:id', (req, res) => {
-//   const inspectionId = req.params.id;
-
-//   res.render('startInspection', { inspectionId });
-// });
-
-
-const inspectionCategories = require('../data/inspectionCategories');
-router.get('/inspections/start/:id', async (req, res) => {
-  const inspectionId = req.params.id;
+router.get('/inspector/pastInspections', async (req, res) => {
+  const zone = req.session.zone;
+  const inspectorName = req.session.inspectorName;
 
   try {
-    // Get inspection and restaurant info
-    const [[inspection]] = await db.query(
-      `SELECT i.*, r.name, r.license_number, r.phone, r.address
-       FROM inspections i
-       JOIN restaurants r ON i.restaurant_id = r.id
-       WHERE i.id = ?`, [inspectionId]);
+    const [rows] = await db.query(`
+      SELECT ir.id, ir.hygiene_score AS hygieneScore, ir.status, ir.submitted_at,
+             r.name AS restaurant_name, r.license_number
+      FROM inspection_reports ir
+      JOIN restaurants r ON ir.restaurant_id = r.id
+      WHERE r.zone = ?
+      ORDER BY ir.submitted_at DESC
+    `, [zone]);
 
-    if (!inspection) {
-      return res.status(404).render('error', { message: 'Inspection not found' });
-    }
+    const pendingReports = rows.filter(r => r.status === 'pending');
+    const approvedReports = rows.filter(r => r.status === 'approved');
+    const rejectedReports = rows.filter(r => r.status === 'rejected');
 
-    res.render('startInspection', {
-      inspection,
-      restaurant: inspection,
-      categories: inspectionCategories
+    res.render('pastInspections', {
+      pendingReports,
+      approvedReports,
+      rejectedReports,
+      inspectorName
     });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).render('error', { message: 'Internal Server Error' });
+    console.error('Failed to load past inspections:', err);
+    res.status(500).send('Error loading reports');
   }
 });
+
+
+router.get('/inspector/view-report/:id', async (req, res) => {
+  const reportId = req.params.id;
+  const inspectorName = req.session.inspectorName;
+
+  try {
+    const [[report]] = await db.query(`
+      SELECT ir.*, r.name AS restaurant_name, r.license_number, r.phone, r.email, r.address,
+             i.name AS inspector_name
+      FROM inspection_reports ir
+      JOIN restaurants r ON ir.restaurant_id = r.id
+      JOIN inspectors i ON ir.inspector_id = i.id
+      WHERE ir.id = ?
+    `, [reportId]);
+
+    if (!report) return res.status(404).render('error', { message: 'Report not found' });
+
+    const hygieneScore = parseFloat(report.hygiene_score);
+    const scoreColor = hygieneScore >= 4 ? 'green' : hygieneScore >= 3 ? 'orange' : 'red';
+
+    let reportData = {};
+    try {
+      reportData = typeof report.report_json === 'string' ? JSON.parse(report.report_json) : report.report_json;
+    } catch (err) {
+      console.error('Failed to parse report_json:', err);
+      reportData = {};
+    }
+
+    let imageUrls = [];
+
+    if (Array.isArray(report.image_paths)) {
+      imageUrls = report.image_paths; // ✅ Already a JS array
+    } else if (typeof report.image_paths === 'string') {
+    try {
+      imageUrls = JSON.parse(report.image_paths);
+    } catch (err) {
+      console.error('❌ Failed to parse image_paths:', err.message);
+    }
+    }
+
+
+    res.render('viewReport', {
+      report: {
+        ...report,
+        hygiene_score: hygieneScore,
+        report_data: reportData,
+        image_urls: imageUrls
+      },
+      restaurant: {
+        name: report.restaurant_name,
+        license_number: report.license_number,
+        phone: report.phone,
+        email: report.email,
+        address: report.address
+      },
+      inspector: {
+        name: report.inspector_name || inspectorName
+      },
+      scoreColor,
+      checklistSchema,
+      sectionLabels
+    });
+
+  } catch (err) {
+    console.error('Failed to load report:', err);
+    res.status(500).render('error', { message: 'Internal server error' });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const inspectionCategories = require('../data/inspectionCategories');
+// router.get('/inspections/start/:id', async (req, res) => {
+//   const inspectionId = req.params.id;
+
+//   try {
+//     // Get inspection and restaurant info
+//     const [[inspection]] = await db.query(
+//       `SELECT i.*, r.name, r.license_number, r.phone, r.address
+//        FROM inspections i
+//        JOIN restaurants r ON i.restaurant_id = r.id
+//        WHERE i.id = ?`, [inspectionId]);
+
+//     if (!inspection) {
+//       return res.status(404).render('error', { message: 'Inspection not found' });
+//     }
+
+//     res.render('startInspection', {
+//       inspection,
+//       restaurant: inspection,
+//       categories: inspectionCategories
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).render('error', { message: 'Internal Server Error' });
+//   }
+// });
 
 
   
 //Post
 
-  router.post('/inspections/start/:id', async (req, res) => {
-    const inspectionId = req.params.id;
-    const inspectorId = req.session.ID; // assumes you have a login with a session
-    const formData = req.body;
+//   router.post('/inspections/start/:id', async (req, res) => {
+//     const inspectionId = req.params.id;
+//     const inspectorId = req.session.ID; // assumes you have a login with a session
+//     const formData = req.body;
   
-    try {
-      // Get restaurant ID from inspection
-      const [[inspection]] = await db.query(
-        `SELECT * FROM inspections WHERE id = ?`,
-        [inspectionId]
-      );
+//     try {
+//       // Get restaurant ID from inspection
+//       const [[inspection]] = await db.query(
+//         `SELECT * FROM inspections WHERE id = ?`,
+//         [inspectionId]
+//       );
   
-      if (!inspection) {
-        return res.status(404).render('error', { message: 'Invalid inspection ID' });
-      }
+//       if (!inspection) {
+//         return res.status(404).render('error', { message: 'Invalid inspection ID' });
+//       }
   
-      // Build JSON from checkbox data
-      const report = {};
+//       // Build JSON from checkbox data
+//       const report = {};
   
-      for (const category in formData) {
-        if (category !== 'notes') { // exclude notes from report
-          report[category] = {};
+//       for (const category in formData) {
+//         if (category !== 'notes') { // exclude notes from report
+//           report[category] = {};
   
-          for (const item in formData[category]) {
-            report[category][item] = true;
-          }
-        }
-      }
-      const notes = formData.notes || '';
-      // Insert into inspection_reports with notes
-      await db.query(
-        ` INSERT INTO inspection_reports 
-          (inspection_id, inspector_id, restaurant_id, report_json, notes) 
-          VALUES (?, ?, ?, ?, ?)`,
-        [inspectionId, inspectorId, inspection.restaurant_id, JSON.stringify(report), notes]
-      );
+//           for (const item in formData[category]) {
+//             report[category][item] = true;
+//           }
+//         }
+//       }
+//       const notes = formData.notes || '';
+//       // Insert into inspection_reports with notes
+//       await db.query(
+//         ` INSERT INTO inspection_reports 
+//           (inspection_id, inspector_id, restaurant_id, report_json, notes) 
+//           VALUES (?, ?, ?, ?, ?)`,
+//         [inspectionId, inspectorId, inspection.restaurant_id, JSON.stringify(report), notes]
+//       );
   
-      // Update inspection's status to Completed
-      await db.query(
-        `UPDATE inspections SET status = 'Completed' WHERE id = ?`,
-        [inspectionId]
-      );
+//       // Update inspection's status to Completed
+//       await db.query(
+//         `UPDATE inspections SET status = 'Completed' WHERE id = ?`,
+//         [inspectionId]
+//       );
   
       
-return res.render('success', { message: 'Inspection successfully submitted!' });
+// return res.render('success', { message: 'Inspection successfully submitted!' });
 
-    } catch (err) {
-      console.error(err);
-      res.status(500).render('error', { message: 'Failed to submit inspection' });
-    }
-  });
+//     } catch (err) {
+//       console.error(err);
+//       res.status(500).render('error', { message: 'Failed to submit inspection' });
+//     }
+//   });
   
 
 module.exports = router; 

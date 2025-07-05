@@ -45,6 +45,12 @@ app.get('/logout', (req, res) => {
   });
 });
 
+app.locals.formatLabel = function(key) {
+  return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+};
+app.use('/uploads', express.static('D:/images'));
+
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {

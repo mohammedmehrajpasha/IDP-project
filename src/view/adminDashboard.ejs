@@ -21,8 +21,6 @@
       <span class="zone">Managing: <%= zone %></span>
     </div>
     <div class="status">
-      <i data-lucide="activity" class="lucide-icon green"></i>
-      <span>System Status: Active</span>
     </div>
   </div>
 
@@ -95,34 +93,8 @@
       </a>
     </div>
   </div>
-
-  <!-- Recent Activity -->
-  <div class="recent-activity">
-    <h3>Recent Activity</h3>
-    <div class="activity-list">
-      <div class="activity-item blue-light">
-        <i data-lucide="file-text" class="lucide-icon blue"></i>
-        <div>
-          <p class="title">New inspection report submitted</p>
-          <p class="desc">Spice Garden Restaurant - Inspector Raj Kumar</p>
-        </div>
-        <span class="timestamp">2 hours ago</span>
-      </div>
-
-      <div class="activity-item green-light">
-        <i data-lucide="building-2" class="lucide-icon green"></i>
-        <div>
-          <p class="title">New restaurant application</p>
-          <p class="desc">Coffee Corner Café - Pending approval</p>
-        </div>
-        <span class="timestamp">1 day ago</span>
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<%- include('partials/footer') %>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
   lucide.createIcons();

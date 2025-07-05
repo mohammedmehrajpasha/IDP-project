@@ -2,6 +2,8 @@ const express=require('express');
 const router = express.Router();
 const db = require('../config/dbConnect');
 
+const { checklistSchema, sectionLabels } = require('../data/inspectionCategories');
+
 router.get('/adminLogin',(req,res)=>{
   res.render('adminLogin');
 })
@@ -104,7 +106,6 @@ router.get('/admin/restaurants/edit/:id', async (req, res) => {
   }
 });
 
-
 router.get('/admin/restaurants', async (req, res) => {
   const zone = req.session.zone;
 
@@ -153,24 +154,33 @@ router.get('/admin/reports', async (req, res) => {
   const zone = req.session.zone;
 
   try {
-    const [inspections] = await db.query(`
+    const [all] = await db.query(`
       SELECT 
-  i.id AS inspection_id,
-  r.name AS restaurant_name,
-  r.license_number,
-  ins.name AS inspector_name,
-  i.inspection_date,
-  ir.id AS report_id,
-  ir.status AS report_status
-FROM inspections i
-JOIN inspection_reports ir ON ir.inspection_id = i.id
-JOIN restaurants r ON i.restaurant_id = r.id
-JOIN inspectors ins ON i.inspector_id = ins.id
--- REMOVE THE FILTERS FOR TESTING
-ORDER BY ir.submitted_at DESC
+        ir.id AS report_id,
+        ir.status,
+        ir.hygiene_score,
+        ir.submitted_at,
+        r.name AS restaurant_name,
+        r.license_number,
+        ins.name AS inspector_name
+      FROM inspection_reports ir
+      JOIN inspections i ON ir.inspection_id = i.id
+      JOIN restaurants r ON ir.restaurant_id = r.id
+      JOIN inspectors ins ON ir.inspector_id = ins.id
+      WHERE r.zone = ?
+      ORDER BY ir.submitted_at DESC
     `, [zone]);
 
-    res.render('reviewReports', { inspections, zone });
+    const pending = all.filter(r => r.status === 'pending');
+    const approved = all.filter(r => r.status === 'approved');
+    const rejected = all.filter(r => r.status === 'rejected');
+
+    res.render('reviewReports', {
+      all,
+      pending,
+      approved,
+      rejected
+    });
 
   } catch (err) {
     console.error('Error loading reports:', err);
@@ -179,10 +189,69 @@ ORDER BY ir.submitted_at DESC
 });
 
 router.get('/admin/reports/:id', async (req, res) => {
-  const [report] = await db.query('SELECT * FROM inspection_reports WHERE report_id = ?', [req.params.id]);
-  if (!report || report.length === 0) return res.status(404).send("Not found");
+  const reportId = req.params.id;
 
-  res.render('viewReport', { report: report[0] });
+  try {
+    const [[report]] = await db.query(`
+      SELECT ir.*, r.name AS restaurant_name, r.license_number, r.phone, r.email, r.address,
+             i.name AS inspector_name
+      FROM inspection_reports ir
+      JOIN restaurants r ON ir.restaurant_id = r.id
+      JOIN inspectors i ON ir.inspector_id = i.id
+      WHERE ir.id = ?
+    `, [reportId]);
+
+    if (!report) return res.status(404).render('error', { message: 'Report not found' });
+
+    const hygieneScore = parseFloat(report.hygiene_score);
+    const scoreColor = hygieneScore >= 4 ? 'green' : hygieneScore >= 3 ? 'orange' : 'red';
+
+    let reportData = {};
+    try {
+      reportData = typeof report.report_json === 'string' ? JSON.parse(report.report_json) : report.report_json;
+    } catch (err) {
+      console.error('Failed to parse report_json:', err);
+      reportData = {};
+    }
+
+    let imageUrls = [];
+    if (Array.isArray(report.image_paths)) {
+      imageUrls = report.image_paths;
+    } else if (typeof report.image_paths === 'string') {
+      try {
+        imageUrls = JSON.parse(report.image_paths);
+      } catch (err) {
+        console.error('❌ Failed to parse image_paths:', err.message);
+        imageUrls = [];
+      }
+    }
+
+    res.render('adminViewReport', {
+      report: {
+        ...report,
+        hygiene_score: hygieneScore,
+        report_data: reportData,
+        image_urls: imageUrls
+      },
+      restaurant: {
+        name: report.restaurant_name,
+        license_number: report.license_number,
+        phone: report.phone,
+        email: report.email,
+        address: report.address
+      },
+      inspector: {
+        name: report.inspector_name
+      },
+      scoreColor,
+      checklistSchema,
+      sectionLabels
+    });
+
+  } catch (err) {
+    console.error('Failed to load admin report:', err);
+    res.status(500).render('error', { message: 'Internal server error' });
+  }
 });
 
 router.get('/admin/inspections/schedule', async (req, res) => {
@@ -221,7 +290,7 @@ router.get('/admin/inspections/schedule', async (req, res) => {
       FROM inspections i
       JOIN restaurants r ON i.restaurant_id = r.id
       JOIN inspectors ins ON i.inspector_id = ins.id
-      WHERE r.zone = ? AND i.status IN ('Scheduled', 'Completed')
+      WHERE r.zone = ? AND i.status ='Scheduled'
       ORDER BY i.inspection_date DESC
     `, [zone]);
 
@@ -249,7 +318,6 @@ router.get('/admin/inspections/schedule', async (req, res) => {
 
 
 router.post('/adminLogin',async (req, res)=>{
-  console.log(req.body);
   const {email, password} = req.body;
   if (!email || !password) {
     return res.status(400).render('error', { message: "All fields are required" });
@@ -410,14 +478,50 @@ router.get('/admin/restaurants/view', async (req, res) => {
 });
 
 router.post('/admin/reports/approve/:id', async (req, res) => {
-  await db.query('UPDATE inspection_reports SET status = "approved", reviewed_at = NOW() WHERE report_id = ?', [req.params.id]);
-  res.redirect('/admin/reports');
+  const reportId = req.params.id;
+
+  try {
+    // Get restaurant_id, hygiene_score, inspection_id
+    const [[report]] = await db.query(`
+      SELECT ir.restaurant_id, ir.hygiene_score, i.last_inspection
+      FROM inspection_reports ir
+      JOIN inspections i ON ir.inspection_id = i.id
+      WHERE ir.id = ?
+    `, [reportId]);
+
+    if (!report) {
+      return res.status(404).render('error', { message: 'Report not found.' });
+    }
+
+    // Update inspection_reports status
+    await db.query(`UPDATE inspection_reports SET status = 'approved' WHERE id = ?`, [reportId]);
+
+    // Update restaurants table with new score & date
+    await db.query(`
+      UPDATE restaurants 
+      SET hygiene_score = ?, last_inspection_date = ?
+      WHERE id = ?
+    `, [report.hygiene_score, report.last_inspection, report.restaurant_id]);
+
+    res.redirect('/admin/reports');
+  } catch (err) {
+    console.error('Error approving report:', err);
+    res.status(500).render('error', { message: 'Failed to approve report.' });
+  }
 });
 
 router.post('/admin/reports/reject/:id', async (req, res) => {
-  await db.query('UPDATE inspection_reports SET status = "rejected", reviewed_at = NOW() WHERE report_id = ?', [req.params.id]);
-  res.redirect('/admin/reports');
+  const reportId = req.params.id;
+
+  try {
+    await db.query(`UPDATE inspection_reports SET status = 'rejected' WHERE id = ?`, [reportId]);
+    res.redirect('/admin/reports');
+  } catch (err) {
+    console.error('Error rejecting report:', err);
+    res.status(500).render('error', { message: 'Failed to reject report.' });
+  }
 });
+
 
 router.post('/admin/inspections/schedule', async (req, res) => {
   const { restaurant_id, inspector_id, inspection_date } = req.body;

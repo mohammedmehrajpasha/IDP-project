@@ -53,17 +53,6 @@ VALUES
 ('Pooja Reddy', 'insp6@gmail.com', '8980077000', 'pass123', 'Chennai North', 'Red Hills'),
 ('Aman Bhatt', 'insp7@gmail.com', '8567452301', 'pass123', 'Chennai North', 'Minjur');
 
-CREATE TABLE inspections (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  restaurant_id INT,
-  inspector_id INT,
-  inspection_date DATE,
-  hygiene_score INT CHECK (hygiene_score BETWEEN 1 AND 5),
-  comments TEXT,
-  images TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE restaurants (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(100),
@@ -97,8 +86,8 @@ CREATE TABLE inspections (
   id INT NOT NULL AUTO_INCREMENT,
   restaurant_id INT NOT NULL,
   inspector_id INT NOT NULL,
-  inspection_date DATE DEFAULT NULL, -- The scheduled date
   status ENUM('Scheduled', 'Not-Scheduled', 'Completed') NOT NULL DEFAULT 'Not-Scheduled',
+  inspection_date DATE DEFAULT NULL, -- The scheduled date
   last_inspection DATE DEFAULT NULL, -- The date the inspection was actually completed
   PRIMARY KEY (id),
   FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE,
@@ -112,15 +101,12 @@ INSERT INTO inspections (restaurant_id, inspector_id, status, last_inspection, i
 (4, 1, 'Not-Scheduled', '2025-05-20', NULL),
 (8, 2, 'Scheduled', '2025-06-11', '2025-06-15');
 
-
-DROP TABLE IF EXISTS inspection_reports;
-
 CREATE TABLE inspection_reports (
   id INT PRIMARY KEY AUTO_INCREMENT,
   inspection_id INT NOT NULL,
   inspector_id INT NOT NULL,
   restaurant_id INT NOT NULL,
-  report_json JSON NOT NULL,
+  report_json JSON,
   notes TEXT,
   image_paths JSON, -- e.g. ["D:/images/image1.jpg", "D:/images/image2.jpg"]
   latitude DECIMAL(9,6),

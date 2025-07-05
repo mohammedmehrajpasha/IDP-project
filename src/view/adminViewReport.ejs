@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Inspection Report – <%= restaurant.name %></title>
+  <link rel="stylesheet" href="/css/viewReport.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<%- include('partials/header1') %>
+
+<div class="wrapper">
+
+  <!-- Go Back -->
+  <div class="go-back">
+    <a href="/admin/reports" class="btn btn-outline">← Go Back</a>
+  </div>
+
+  <!-- Header -->
+  <div class="block report-header">
+    <div>
+      <h1>Inspection Report</h1>
+      <p class="sub">Detailed hygiene inspection submitted by inspector</p>
+    </div>
+    <div class="badges">
+      <span class="badge <%= report.status %>"><%= report.status.charAt(0).toUpperCase() + report.status.slice(1) %></span>
+      <span class="badge score <%= scoreColor %>">Score: <%= report.hygiene_score %>/5.0</span>
+    </div>
+  </div>
+
+  <!-- Info Block -->
+  <div class="block info-grid">
+    <div>
+      <h3>Restaurant Info</h3>
+      <p><strong>Name:</strong> <%= restaurant.name %></p>
+      <p><strong>License:</strong> <%= restaurant.license_number %></p>
+      <p><strong>Phone:</strong> <%= restaurant.phone %></p>
+      <p><strong>Email:</strong> <%= restaurant.email %></p>
+      <p><strong>Address:</strong> <%= restaurant.address %></p>
+    </div>
+    <div>
+      <h3>Inspection Info</h3>
+      <p><strong>Date:</strong> <%= new Date(report.submitted_at).toLocaleDateString() %></p>
+      <p><strong>Inspector:</strong> <%= inspector.name %></p>
+      <p><strong>Latitude:</strong> <%= report.latitude || 'N/A' %></p>
+      <p><strong>Longitude:</strong> <%= report.longitude || 'N/A' %></p>
+    </div>
+  </div>
+
+  <!-- Checklist -->
+  <% for (let category in checklistSchema) { %>
+    <div class="block checklist-card">
+      <h4><%= sectionLabels[category] %></h4>
+      <ul>
+        <% for (let key in checklistSchema[category]) {
+          const section = report.report_data[category] || {};
+          const isCompliant = section[key] === 'on';
+        %>
+        <li>
+          <span><%= checklistSchema[category][key] %></span>
+          <span class="<%= isCompliant ? 'compliant' : 'non-compliant' %>">
+            <i data-lucide="<%= isCompliant ? 'check-circle' : 'x-circle' %>"></i>
+            <%= isCompliant ? 'Compliant' : 'Non-Compliant' %>
+          </span>
+        </li>
+        <% } %>
+      </ul>
+    </div>
+  <% } %>
+
+  <!-- Notes -->
+  <% if (report.notes) { %>
+    <div class="block">
+      <h4>Inspector Notes</h4>
+      <p class="notes"><%= report.notes %></p>
+    </div>
+  <% } %>
+
+  <!-- Images -->
+  <% if (report.image_urls.length > 0) { %>
+    <div class="block">
+      <h4>Uploaded Images</h4>
+      <div class="images">
+        <% report.image_urls.forEach(img => { %>
+          <a href="/uploads/<%= img %>" target="_blank">
+            <img src="/uploads/<%= img %>" alt="Uploaded Image">
+          </a>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Final Score -->
+  <div class="block center">
+    <h4>Overall Assessment</h4>
+    <p class="big-score <%= scoreColor %>"><%= report.hygiene_score %></p>
+    <p>
+      <% if (report.hygiene_score >= 4) { %>
+        Excellent Hygiene Standards
+      <% } else if (report.hygiene_score >= 3) { %>
+        Good Hygiene Standards
+      <% } else { %>
+        Needs Improvement
+      <% } %>
+    </p>
+  </div>
+
+  <!-- Admin Actions -->
+  <% if (report.status === 'pending') { %>
+    <div class="block center">
+  <form action="/admin/reports/approve/<%= report.id %>" method="POST" style="display: inline-block;">
+    <button type="submit" class="btn-approve">
+      <i data-lucide="check-circle"></i> Approve
+    </button>
+  </form>
+  <form action="/admin/reports/reject/<%= report.id %>" method="POST" style="display: inline-block;">
+    <button type="submit" class="btn-reject">
+      <i data-lucide="x-circle"></i> Reject
+    </button>
+  </form>
+</div>
+
+  <% } %>
+
+</div>
+
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>

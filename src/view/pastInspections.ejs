@@ -2,33 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Review Inspection Reports – Admin</title>
+  <title>Past Inspections – FSSAI Inspector Hub</title>
   <link rel="stylesheet" href="/css/pastInspections.css" />
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
-<%- include('partials/header1') %>
+<%- include('partials/header2') %>
 
 <div class="dashboard-container">
 
   <!-- Header -->
   <div class="dashboard-header">
-    <div>
-      <h1>Review Inspection Reports</h1>
-      <p>All completed reports for restaurants in your zone</p>
-    </div>
-    <div class="status">
-      <i data-lucide="file-text" class="lucide-icon black"></i>
-      <span><%= all.length %> Total Reports</span>
-    </div>
+    <h1>Past Inspections</h1>
+    <p>View completed inspection reports from your zone</p>
   </div>
 
   <!-- Tabs -->
   <div class="tabs">
-    <button class="tab-btn active" data-tab="pending">Pending (<%= pending.length %>)</button>
-    <button class="tab-btn" data-tab="approved">Approved (<%= approved.length %>)</button>
-    <button class="tab-btn" data-tab="rejected">Rejected (<%= rejected.length %>)</button>
+    <button class="tab-btn active" data-tab="pending">Pending (<%= pendingReports.length %>)</button>
+    <button class="tab-btn" data-tab="approved">Approved (<%= approvedReports.length %>)</button>
+    <button class="tab-btn" data-tab="rejected">Rejected (<%= rejectedReports.length %>)</button>
   </div>
 
   <% function getScoreClass(score) {
@@ -37,17 +31,17 @@
     else return 'red';
   } %>
 
-  <% ['pending', 'approved', 'rejected'].forEach(tab => {
-       const reports = tab === 'pending' ? pending : (tab === 'approved' ? approved : rejected); %>
+  <% ['pending', 'approved', 'rejected'].forEach(tab => { 
+       const list = tab === 'pending' ? pendingReports : (tab === 'approved' ? approvedReports : rejectedReports); %>
     <div class="tab-content <%= tab === 'pending' ? 'active' : '' %>" id="<%= tab %>">
-      <% if (reports.length === 0) { %>
+      <% if (list.length === 0) { %>
         <div class="empty-state">
           <i data-lucide="file-text" class="lucide-icon gray large"></i>
           <p>No <%= tab %> reports found.</p>
         </div>
       <% } else { %>
         <div class="reports-grid">
-          <% reports.forEach(r => { %>
+          <% list.forEach(r => { %>
             <div class="report-card">
               <div class="report-header">
                 <div>
@@ -56,16 +50,16 @@
                 </div>
                 <div class="badges">
                   <span class="badge <%= r.status %>"><%= r.status.charAt(0).toUpperCase() + r.status.slice(1) %></span>
-                  <span class="badge score <%= getScoreClass(r.hygiene_score) %>">Score: <%= r.hygiene_score %>/5.0</span>
+                  <span class="badge score <%= getScoreClass(r.hygieneScore) %>">Score: <%= r.hygieneScore %>/5.0</span>
                 </div>
               </div>
               <div class="report-body">
-                <div><i data-lucide="calendar" class="lucide-icon gray small"></i> <%= new Date(r.submitted_at).toLocaleString('en-IN') %></div>
-                <div><i data-lucide="user" class="lucide-icon gray small"></i> Inspector: <%= r.inspector_name %></div>
+                <div><i data-lucide="calendar" class="lucide-icon gray small"></i> <%= new Date(r.submitted_at).toLocaleString() %></div>
+                <div><i data-lucide="user" class="lucide-icon gray small"></i> Inspector: <%= inspectorName %></div>
               </div>
               <div class="report-footer">
-                <a href="/admin/reports/<%= r.report_id %>" class="btn btn-outline btn-small">
-                  <i data-lucide="eye" class="lucide-icon small"></i> View Full Report
+                <a href="/inspector/view-report/<%= r.id %>" class="btn btn-outline btn-small">
+                  <i data-lucide="eye" class="lucide-icon small"></i> View Report
                 </a>
               </div>
             </div>
@@ -83,13 +77,12 @@
   const contents = document.querySelectorAll('.tab-content');
   tabs.forEach(btn => {
     btn.addEventListener('click', () => {
-      tabs.forEach(b => b.classList.remove('active'));
+      tabs.forEach(t => t.classList.remove('active'));
       btn.classList.add('active');
       contents.forEach(c => c.classList.remove('active'));
       document.getElementById(btn.dataset.tab).classList.add('active');
     });
   });
 </script>
-
 </body>
 </html>
