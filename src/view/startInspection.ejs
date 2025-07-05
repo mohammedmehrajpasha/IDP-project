@@ -2,61 +2,126 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Start Inspection – FSSAI Inspector Hub</title>
-  <link rel="stylesheet" href="/css/home1.css" />
+  <title>Conduct Inspection – FSSAI Inspector Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/css/startInspection.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+<script>
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(position => {
+      document.getElementById('latitude').value = position.coords.latitude;
+      document.getElementById('longitude').value = position.coords.longitude;
+    }, err => {
+      console.warn('Geolocation permission denied or failed.', err);
+    });
+  }
+</script>
 <body>
-<%- include('partials/header') %>
 
-<section class="features">
-  <div class="container form-container">
-    <h2>🧾 Inspection Form</h2>
+<%- include('partials/header2') %>
 
-    <!-- Restaurant Details -->
-    <div class="restaurant-info">
-      <p><strong>🍽️ Name:</strong> <%= restaurant.name %></p>
-      <p><strong>📄 License:</strong> <%= restaurant.license_number %></p>
-      <p><strong>📞 Phone:</strong> <%= restaurant.phone %></p>
-      <p><strong>🏡 Address:</strong> <%= restaurant.address %></p>
+<div class="form-wrapper">
+  <div class="top-header">
+    <div>
+      <h1>Conduct Inspection</h1>
+      <p>Complete the hygiene inspection checklist</p>
+    </div>
+    <span class="badge <%= scoreBadge %>">Current Score: <%= hygieneScore %>/5.0</span>
+  </div>
+
+  <form action="/inspection/submit/<%= inspection.id %>" method="POST" enctype="multipart/form-data">
+
+    <!-- Restaurant Info -->
+    <div class="card">
+      <div class="card-header">
+        <i data-lucide="building-2" class="icon blue"></i>
+        <div>
+          <h2><%= restaurant.name %></h2>
+          <p>License: <%= restaurant.license_number %></p>
+        </div>
+      </div>
+      <div class="card-content">
+        <p><i data-lucide="map-pin"></i> <%= restaurant.address %></p>
+        <p><i data-lucide="phone"></i> <%= restaurant.phone %></p>
+        <p><i data-lucide="mail"></i> <%= restaurant.email %></p>
+        <p><i data-lucide="calendar"></i> Scheduled: <%= inspection.scheduled_date %></p>
+      </div>
     </div>
 
-    <!-- Inspection Form -->
-    <form action="/inspections/start/<%= inspection.id %>" method="POST">
-      <% categories.forEach(category => { %>
-        <div class="inspection-category">
-          <h3><%= category.name %></h3>
-          <% category.items.forEach(item => { %>
-            <div class="inspection-item">
-              <label>
-                <input type="checkbox" name="<%= category.id %>[<%= item.id %>]" value="true" />
-                <span><%= item.name %></span>
-              </label>
-            </div>
-            <!-- <div class="inspection-item">
-  <label class="custom-checkbox">
-    <input type="checkbox" name="<%= category.id %>[<%= item.id %>]" />
-    <span class="checkbox-text"><%= item.name %></span>
-  </label>
-</div> -->
+    <!-- Checklist -->
+    <% Object.entries(checklistSchema).forEach(([section, items]) => { %>
+      <div class="card">
+        <div class="card-header">
+          <h3><%= sectionLabels[section] %></h3>
+          <p>Check all items that meet the hygiene standards</p>
+        </div>
+        <div class="card-content">
+          <% Object.entries(items).forEach(([key, label]) => { %>
+            <label class="checkbox-row">
+              <input type="checkbox" name="checklist[<%= section %>][<%= key %>]" />
+              <span><%= label %></span>
+            </label>
           <% }) %>
         </div>
-      <% }) %>
-
-      <h3>📝 Inspection Notes</h3>
-      <div class="inspection-item">
-        <label for="notes"><strong>Add Detailed Observations or Notes</strong></label>
-        <textarea id="notes" name="notes" rows="7" placeholder="Enter your observations here..."></textarea>
       </div>
-      
+    <% }) %>
 
+    <!-- Notes -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Additional Notes</h3>
+        <p>Add any observations or recommendations</p>
+      </div>
+      <div class="card-content">
+        <textarea name="notes" rows="5" placeholder="Enter notes..."></textarea>
+      </div>
+    </div>
 
-
-      <button type="submit" class="btn">Submit Inspection</button>
-    </form>
+    <div class="location-card">
+  <div class="location-group">
+    <label for="latitude">Latitude</label>
+    <input type="text" id="latitude" name="latitude" readonly />
   </div>
-</section>
+  <div class="location-group">
+    <label for="longitude">Longitude</label>
+    <input type="text" id="longitude" name="longitude" readonly />
+  </div>
+</div>
+
+
+<div class="form-group">
+  
+</div>
+
+    <!-- Images -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Supporting Images</h3>
+        <p>Upload photos for your inspection</p>
+      </div>
+      <div class="card-content drop-area">
+        <i data-lucide="camera" class="icon large gray"></i>
+        <p>Click to upload or drag and drop</p>
+        <input type="file" name="images" multiple accept="image/*" />
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="submit-actions">
+      <button type="button" class="btn outline" onclick="window.history.back()">Cancel</button>
+      <button type="submit" class="btn primary">
+        <i data-lucide="check-circle"></i> Submit Report
+      </button>
+    </div>
+    
+  </form>
+  
+</div>
 
 <%- include('partials/footer') %>
+<script>
+  lucide.createIcons();
+</script>
 </body>
 </html>

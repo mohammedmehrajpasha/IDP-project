@@ -11,55 +11,72 @@
 
 <%- include('partials/header1') %>
 
-<div class="form-wrapper">
-  <div class="form-header">
-    <h1>Add New Inspector</h1>
-    <p>Fill in the details to register a new inspector under your zone.</p>
+<div class="add-container">
+  <!-- Header Section -->
+  <div class="add-header">
+    <div>
+      <h1>Add New Inspector</h1>
+      <p>Fill in the details to register a new inspector under your zone</p>
+    </div>
+    <div class="assignment">
+      <i data-lucide="user-plus" class="lucide-icon green"></i>
+      <span>Zone: <%= zone %></span>
+    </div>
   </div>
 
   <% if (success) { %>
-    <div class="success-message">
-      ✅ Inspector added successfully!
-    </div>
+    <div class="success-message">✅ Inspector added successfully!</div>
   <% } %>
 
-  <form class="form-card" method="POST" action="/admin/inspectors/add">
-    <div class="form-group">
-      <label for="name">Name</label>
-      <input type="text" id="name" name="name" placeholder="Inspector Name" required>
-    </div>
+  <!-- Form Card -->
+  <div class="card">
+    <h2>Inspector Details</h2>
+    <p class="subtitle">Provide inspector's credentials and region assignment.</p>
 
-    <div class="form-group">
-      <label for="email">Email</label>
-      <input type="email" id="email" name="email" placeholder="Email" required>
-    </div>
+    <form action="/admin/inspectors/add" method="POST" class="add-form">
+      <div class="form-grid">
+        <div>
+          <label for="name">Full Name *</label>
+          <input type="text" name="name" required placeholder="Inspector Name">
+        </div>
 
-    <div class="form-group">
-      <label for="phone">Phone Number</label>
-      <input type="text" id="phone" name="phone" placeholder="Phone Number" required>
-    </div>
+        <div>
+          <label for="email">Email *</label>
+          <input type="email" name="email" required placeholder="inspector@example.com">
+        </div>
 
-    <div class="form-group">
-      <label for="region">Region</label>
-      <input type="text" id="region" name="region" placeholder="Region" required>
-    </div>
+        <div>
+          <label for="phone">Phone Number *</label>
+          <input type="text" name="phone" required placeholder="+91-XXXXXXXXXX">
+        </div>
 
-    <div class="form-group">
-      <label for="password">Password</label>
-      <input type="password" id="password" name="password" placeholder="Password" required>
-    </div>
+        <div>
+          <label for="region">Region *</label>
+          <input type="text" name="region" required placeholder="Assigned region (e.g., Indiranagar)">
+        </div>
 
-    <div class="form-footer">
-      <button type="submit" class="btn btn-black">Add Inspector</button>
-      <a href="/admin/inspectors" class="btn btn-outline">← Back to List</a>
-    </div>
-  </form>
+        <div>
+          <label for="password">Password *</label>
+          <input type="password" name="password" required placeholder="Create password">
+        </div>
+      </div>
+
+      <div class="assignment-info">
+        <strong>Assignment Zone</strong>
+        <p><%= zone %></p>
+      </div>
+
+      <div class="form-actions">
+        <a href="/admin/inspectors" class="btn-outline">← Cancel</a>
+        <button type="submit" class="btn-black">Add Inspector</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <%- include('partials/footer') %>
 
-<script type="module">
-  import lucide from "https://unpkg.com/lucide@latest/dist/esm/lucide.js";
+<script>
   lucide.createIcons();
 </script>
 </body>

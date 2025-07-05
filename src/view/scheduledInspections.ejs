@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Scheduled Inspections – FSSAI Inspector Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/scheduledInspections.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<%- include('partials/header2') %>
+
+<div class="container">
+
+  <div class="header">
+    <div>
+      <h1>Scheduled Inspections</h1>
+      <p>Manage your assigned restaurant inspections</p>
+    </div>
+    <div class="count">
+      <i data-lucide="calendar" class="lucide-icon black"></i>
+      <span><%= inspections.length %> Total Inspections</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <% if (inspections.length > 0) { %>
+      <% inspections.forEach(ins => { %>
+        <div class="card">
+          <div class="card-header">
+            <div class="header-left">
+              <i data-lucide="building-2" class="lucide-icon black"></i>
+              <div>
+                <h3><%= ins.name %></h3>
+                <p>License: <%= ins.license_number %></p>
+              </div>
+            </div>
+            <div><span class="badge <%= ins.status.toLowerCase() %>"><%= ins.status %></span></div>
+          </div>
+
+          <div class="card-content">
+            <p><i data-lucide="map-pin"></i> <%= ins.address %></p>
+            <p><i data-lucide="clock"></i> Scheduled: <%= new Date(ins.inspection_date).toLocaleDateString() %></p>
+            <p><strong>Contact:</strong> <%= ins.contact_person %></p>
+          </div>
+
+          <div class="actions">
+            <% if (ins.status === 'Scheduled') { %>
+              <a href="/inspection/start/<%= ins.id %>" class="btn black">Start Inspection</a>
+            <% } else if (ins.status === 'Completed') { %>
+              <a href="/inspector/reports/view/<%= ins.id %>" class="btn outline">View Report</a>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="empty-state">
+        <i data-lucide="calendar" class="lucide-icon gray big"></i>
+        <h3>No Scheduled Inspections</h3>
+        <p>You don't have any inspections scheduled at the moment.</p>
+      </div>
+    <% } %>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>
+<script>lucide.createIcons()</script>
+</body>
+</html>

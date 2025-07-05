@@ -2,72 +2,137 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Inspector Dashboard – FSSAI Inspector Hub</title>
-  <link rel="stylesheet" href="/css/home1.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/inspectorDashboard.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-      <!-- Logo -->
-      <div class="logo">
-        🛡️ FSSAI <span>Inspector Hub</span>
-      </div>
+<%- include('partials/header2') %>
 
-      <!-- Logout Button -->
+<div class="dashboard-container">
+
+  <!-- Greeting -->
+  <div class="dashboard-header">
+    <div>
+      <h1>Inspector Dashboard</h1>
+      <p>Welcome back, <%= inspectorName %></p>
+      <span class="zone"><%= zone %> – <%= region %></span>
+    </div>
+    <div class="status">
+      <i data-lucide="check-circle" class="lucide-icon green"></i>
+      <span>Ready for Inspections</span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card blue">
       <div>
-        <a href="/logout" class="btn btn-outline"> Logout</a>
+        <p>Restaurants in Region</p>
+        <h2 class="stat-value"><%= stats.approvedRestaurants %></h2>
       </div>
+      <div class="stat-icon"><i data-lucide="building-2" class="lucide-icon blue"></i></div>
     </div>
-  </nav>
-
-  <!-- Main Dashboard Section -->
-  <section class="features">
-    <div class="container">
-      <div class="features-heading">
-        <h2>👋 Welcome, <%= inspectorName %></h2>
-        <p>Manage your assigned inspections and contribute to food safety enforcement.</p>
+    <div class="stat-card orange">
+      <div>
+        <p>Scheduled Inspections</p>
+        <h2 class="stat-value"><%= stats.scheduledInspections %></h2>
       </div>
-
-      <div class="features-grid">
-
-        <div class="feature-card">
-          <h3>➕ Add Restaurant</h3>
-          <p>Add a new restaurant record for approval by admin.</p>
-          <a href="/inspector/restaurants/add" class="btn btn-outline">📝 Add Restaurant</a>
-        </div>
-        
-        <!-- View Regional Restaurants -->
-        <div class="feature-card">
-          <h3>📍 Restaurants in Your Region</h3>
-          <p>Browse all restaurants located in your assigned region. You may inspect or explore details.</p>
-          <a href="/inspector/restaurants" class="btn btn-outline">🔍 View Regional Restaurants</a>
-        </div>
-  
-        <!-- Scheduled Inspections -->
-        <div class="feature-card">
-          <h3>📅 Scheduled Inspections</h3>
-          <p>View restaurants specifically scheduled for you to inspect by the admin.</p>
-          <a href="/inspections/scheduled" class="btn btn-outline">🗂️ View Scheduled Inspections</a>
-        </div>
-  
-        <!-- Past Inspections -->
-        <div class="feature-card">
-          <h3>📖 Past Inspections</h3>
-          <p>Review previous inspection reports submitted by you.</p>
-          <a href="/inspector/inspections/history" class="btn btn-outline">📄 View Reports</a>
-        </div>
-
-        <!-- Add Restaurant -->
-        
-
-      </div>
+      <div class="stat-icon"><i data-lucide="calendar" class="lucide-icon orange"></i></div>
     </div>
-  </section>
+    <div class="stat-card green">
+      <div>
+        <p>Completed This Month</p>
+        <h2 class="stat-value"><%= stats.completedInspections %></h2>
+      </div>
+      <div class="stat-icon"><i data-lucide="check-circle" class="lucide-icon green"></i></div>
+    </div>
+    <div class="stat-card purple">
+      <div>
+        <p>Pending Approvals</p>
+        <h2 class="stat-value"><%= stats.pendingRestaurants %></h2>
+      </div>
+      <div class="stat-icon"><i data-lucide="clock" class="lucide-icon purple"></i></div>
+    </div>
+  </div>
 
-  <%- include('partials/footer') %>
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="actions-grid">
+      <a href="/inspector/inspections/scheduled" class="action-card">
+        <i data-lucide="calendar" class="lucide-icon icon-box orange-bg"></i>
+        <div>
+          <h4>Scheduled Inspections</h4>
+          <p>View and conduct scheduled inspections</p>
+        </div>
+      </a>
 
+      <a href="/inspector/restaurants/add" class="action-card">
+        <i data-lucide="plus" class="lucide-icon icon-box green-bg"></i>
+        <div>
+          <h4>Add New Restaurant</h4>
+          <p>Register a new restaurant for inspection</p>
+        </div>
+      </a>
+
+      <a href="/inspector/restaurants" class="action-card">
+        <i data-lucide="eye" class="lucide-icon icon-box blue-bg"></i>
+        <div>
+          <h4>View Restaurants</h4>
+          <p>Browse all restaurants in your region</p>
+        </div>
+      </a>
+
+      <a href="/inspector/pastInspections" class="action-card">
+        <i data-lucide="file-text" class="lucide-icon icon-box purple-bg"></i>
+        <div>
+          <h4>Past Inspections</h4>
+          <p>View completed inspection reports</p>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Today's Schedule -->
+<div class="card today-card">
+  <h3 class="card-heading">
+    <i data-lucide="calendar-days" class="lucide-icon heading-icon"></i>
+    Today’s Inspections
+  </h3>
+
+  <% if (todaysInspections.length > 0) { %>
+    <div class="activity-list">
+      <% todaysInspections.forEach(item => { %>
+        <div class="activity-item">
+          <div class="activity-left">
+            <i data-lucide="calendar" class="lucide-icon blue"></i>
+            <div class="activity-text">
+              <p class="title"><%= item.restaurant_name %></p>
+              <p class="desc"><%= item.address %></p>
+              <p class="desc small">Scheduled: <%= new Date(item.scheduled_date).toLocaleDateString() %></p>
+            </div>
+          </div>
+          <a href="/inspection/start/<%= item.id %>" class="btn btn-small">Start Inspection</a>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <i data-lucide="alert-circle" class="lucide-icon gray"></i>
+      <p>No inspections scheduled for today</p>
+    </div>
+  <% } %>
+</div>
+
+
+</div>
+
+<%- include('partials/footer') %>
+<script>
+  lucide.createIcons();
+</script>
 </body>
 </html>

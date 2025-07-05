@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>View Restaurants – FSSAI Inspector Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/viewRestaurants.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+<%- include('partials/header2') %>
+
+<div class="container">
+
+  <div class="header">
+    <div>
+      <h1>View Restaurants</h1>
+      <p>Browse restaurants in your assigned region</p>
+    </div>
+    <div class="location">
+      <i data-lucide="building-2" class="lucide-icon blue"></i>
+      <span><%= zone %> – <%= region %></span>
+    </div>
+  </div>
+
+  <div class="search-card">
+    <h2>Search Restaurants</h2>
+    <p>Find restaurants by name, license number, or contact person</p>
+    <div class="search-input">
+      <i data-lucide="search" class="search-icon"></i>
+      <input type="text" id="searchBar" placeholder="Search restaurants..." oninput="filterRestaurants()">
+    </div>
+  </div>
+
+  <div class="restaurant-grid" id="restaurantList">
+    <% if (restaurants.length > 0) { %>
+      <% restaurants.forEach(r => { %>
+        <div class="restaurant-card">
+          <div class="card-header">
+            <div class="left">
+              <i data-lucide="building-2" class="lucide-icon blue"></i>
+              <div>
+                <h3><%= r.name %></h3>
+                <p>License: <%= r.license_number %></p>
+              </div>
+            </div>
+            <div class="badges">
+              <span class="badge <%= r.status %>"><%= r.status %></span>
+              <span class="badge blue">Score: <%= r.hygiene_score || 'Not Inspected' %></span>
+            </div>
+          </div>
+          <div class="card-content">
+            <div>
+              <p><i data-lucide="map-pin"></i> <%= r.address %></p>
+              <p><i data-lucide="phone"></i> <%= r.phone %></p>
+              <p><i data-lucide="mail"></i> <%= r.email %></p>
+            </div>
+            <div>
+              <p><strong>Contact:</strong> <%= r.contact_person || 'N/A' %></p>
+              <% if (r.last_inspection_date) { %>
+                <p><i data-lucide="calendar"></i> Last Inspection: <%= new Date(r.last_inspection_date).toLocaleDateString() %></p>
+              <% } %>
+              <p><strong>Added on:</strong> <%= new Date(r.created_at).toLocaleDateString() %></p>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="empty-state">
+        <i data-lucide="building-2" class="lucide-icon gray big"></i>
+        <h3>No Restaurants Found</h3>
+        <p>No restaurants available in your region.</p>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+  lucide.createIcons();
+
+  function filterRestaurants() {
+    const input = document.getElementById("searchBar").value.toLowerCase();
+    const cards = document.querySelectorAll(".restaurant-card");
+
+    cards.forEach(card => {
+      const text = card.innerText.toLowerCase();
+      card.style.display = text.includes(input) ? "block" : "none";
+    });
+  }
+</script>
+</body>
+</html>

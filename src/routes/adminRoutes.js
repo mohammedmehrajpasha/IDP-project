@@ -45,12 +45,10 @@ router.get('/admin/settings',(req, res)=>{
 })
 
 router.get('/admin/inspectors/add', (req, res) => {
-  if (!req.session.zone) {
-    return res.status(403).render('error', { message: 'Session expired' });
-  }
-  const { success } = req.query;
-  res.render('addInspector',{success});
-})
+  const zone = req.session.zone;
+  const success = req.query.success;
+  res.render('addInspector', { zone, success });
+});
 
 router.get('/admin/inspectors/edit/:id', async (req, res) => {
   const inspectorId = req.params.id;
@@ -274,18 +272,19 @@ router.post('/adminLogin',async (req, res)=>{
 })
 
 router.post('/admin/inspectors/add', async (req, res) => {
-  const { name, email, phone, region, password } = req.body;
+  const { name, email, phone, password, region } = req.body;
   const zone = req.session.zone;
 
   try {
-    await db.query(
-      'INSERT INTO inspectors (name, email, phone, region, zone, password) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, email, phone, region, zone, password]
-    );
-    res.render('addInspector', { success: true, adminName: req.session.adminName, zone });
+    await db.query(`
+      INSERT INTO inspectors (name, email, phone, password, region, zone)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [name, email, phone, password, region, zone]);
+
+    res.redirect('/admin/inspectors/add?success=1');
   } catch (err) {
-    console.error('Failed to add inspector:', err);
-    res.status(500).send('Internal server error');
+    console.error('Error adding inspector:', err);
+    res.status(500).render('error', { message: 'Failed to add inspector.' });
   }
 });
 

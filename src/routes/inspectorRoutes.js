@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const db = require('../config/dbConnect');
 
 router.get('/inspectorLogin',(req,res)=>{
@@ -31,96 +34,305 @@ router.post('/inspectorLogin', async (req, res) => {
   }
 });
 
+  router.get('/inspector/dashboard', async (req, res) => {
+  const inspectorId = req.session.ID;
+  const inspectorName = req.session.inspectorName || 'Inspector';
+  const zone = req.session.zone;
+  const region = req.session.region;
+
+  if (!inspectorId || !zone || !region) {
+    return res.redirect('/inspectorLogin'); // Or show error
+  }
+
+  try {
+    // Stats for inspector
+    const [[approvedRestaurants]] = await db.query(
+      `SELECT COUNT(*) AS count FROM restaurants WHERE zone = ? AND region = ? AND status = 'approved'`,
+      [zone, region]
+    );
+
+    const [[pendingRestaurants]] = await db.query(
+      `SELECT COUNT(*) AS count FROM restaurants WHERE zone = ? AND region = ? AND status = 'pending'`,
+      [zone, region]
+    );
+
+    const [[scheduledInspections]] = await db.query(
+      `SELECT COUNT(*) AS count FROM inspections WHERE inspector_id = ? AND status = 'Scheduled'`,
+      [inspectorId]
+    );
+
+    const [[completedThisMonth]] = await db.query(
+      `SELECT COUNT(*) AS count FROM inspections WHERE inspector_id = ? AND status = 'Completed' AND MONTH(last_inspection) = MONTH(CURDATE()) AND YEAR(last_inspection) = YEAR(CURDATE())`,
+      [inspectorId]
+    );
+
+    const stats = {
+      approvedRestaurants: approvedRestaurants.count,
+      pendingRestaurants: pendingRestaurants.count,
+      scheduledInspections: scheduledInspections.count,
+      completedInspections: completedThisMonth.count
+    };
+
+    // Today’s scheduled inspections
+    const [todaysInspections] = await db.query(
+      `SELECT i.id, i.inspection_date AS scheduled_date, r.name AS restaurant_name, r.address
+       FROM inspections i
+       JOIN restaurants r ON i.restaurant_id = r.id
+       WHERE i.inspector_id = ?
+         AND i.status = 'Scheduled'
+         AND i.inspection_date = CURDATE()`,
+      [inspectorId]
+    );
+
+    res.render('inspectorDashboard', {
+      inspectorName,
+      zone,
+      region,
+      stats,
+      todaysInspections
+    });
+
+  } catch (err) {
+    console.error('Error loading inspector dashboard:', err);
+    res.status(500).render('error', { message: 'Failed to load dashboard data.' });
+  }
+});
+
+
+  router.get('/inspector/inspections/scheduled', async (req, res) => {
+  const inspectorId = req.session.ID; // Or however you store logged-in user
+  if (!inspectorId) return res.redirect('/inspectorLogin');
+
+  try {
+    const [rows] = await db.query(`
+      SELECT i.*, r.name, r.license_number, r.address, r.contact_person
+      FROM inspections i
+      JOIN restaurants r ON i.restaurant_id = r.id
+      WHERE i.inspector_id = ? AND i.status = 'Scheduled'
+      ORDER BY i.inspection_date ASC
+    `, [inspectorId]);
+
+    res.render('scheduledInspections', { inspections: rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
 
 
 
-  router.get('/inspector/dashboard',(req,res)=>{
-    const inspectorName = req.session.inspectorName || "Inspector"
-    res.render('inspectorDashboard',{ inspectorName })
-  })
+  // GET route
+router.get('/inspector/restaurants/add', (req, res) => {
+  const { zone, region, inspectorName } = req.session;
+  const success = req.query.success;
 
+  if (!zone || !region) {
+    return res.status(403).render('error', { message: 'Unauthorized access. Session expired or not found.' });
+  }
 
+  res.render('addRestaurant', { zone, region, inspectorName, success });
+});
 
-  router.get('/inspector/restaurants', async (req, res) => {
-    const inspectorZone = req.session.zone;
-    const inspectorName = req.session.inspectorName || "Inspector";
+// POST route
+router.post('/inspector/restaurants/add', async (req, res) => {
+  const { name, license_number, contact_person, phone, email, address } = req.body;
+  const { zone, region, ID } = req.session;
+
+  try {
+    await db.query(`
+      INSERT INTO restaurants 
+      (name, license_number, contact_person, phone, email, address, zone, region, created_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [name, license_number, contact_person, phone, email, address, zone, region, ID]);
+
+    res.redirect('/inspector/restaurants/add?success=1');
+  } catch (err) {
+    console.error('Error adding restaurant:', err);
+    res.status(500).render('error', { message: 'Failed to add restaurant.' });
+  }
+});
+
   
-    try {
-      const [restaurants] = await db.query(
-        `SELECT id, name, license_number, region, last_inspection_date 
-         FROM restaurants 
-         WHERE zone = ?`,
-        [inspectorZone]
-      );
-  
-      res.render('regionRestaurants', {
-        inspectorName,
-        restaurants
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).render('error', { message: "Error fetching restaurants." });
+  // routes/inspector.js
+
+router.get('/inspector/restaurants', async (req, res) => {
+  const zone = req.session.zone;
+  const region = req.session.region;
+  const inspectorName = req.session.inspectorName || "Inspector";
+
+  try {
+    const [restaurants] = await db.query(`
+      SELECT id, name, contact_person, license_number, email, phone, zone, region, address, status, hygiene_score, created_at, last_inspection_date
+      FROM restaurants
+      WHERE zone = ? AND region = ? AND status = 'approved'
+    `, [zone, region]);
+
+    res.render('viewRestaurants', {
+      restaurants,
+      inspectorName,
+      zone,
+      region
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).render('error', { message: "Error fetching restaurants." });
+  }
+});
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'D:/images');
+    },
+    filename: function (req, file, cb) {
+      const unique = Date.now() + '-' + file.originalname;
+      cb(null, unique);
     }
-  });
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 }
+});
 
 
+// Checklist schema
+const checklistSchema = {
+  personalHygiene: {
+    handsClean: 'Staff hands are clean and washed regularly',
+    uniformClean: 'Staff uniforms are clean and appropriate',
+    hairCovered: 'Hair is properly covered during food handling',
+    noJewelry: 'No jewelry worn during food preparation'
+  },
+  premisesCleanliness: {
+    floorsClean: 'Floors are clean and well-maintained',
+    wallsClean: 'Walls are clean and free from stains',
+    ceilingsClean: 'Ceilings are clean and well-maintained',
+    tablesClean: 'Tables and surfaces are properly sanitized'
+  },
+  foodStorage: {
+    temperatureControlled: 'Food stored at appropriate temperatures',
+    separateRawCooked: 'Raw and cooked foods stored separately',
+    properLabeling: 'Food items are properly labeled with dates',
+    noExpiredItems: 'No expired food items found'
+  },
+  equipment: {
+    cleanUtensils: 'Utensils are clean and properly stored',
+    workingRefrigeration: 'Refrigeration equipment working properly',
+    properSanitization: 'Equipment is properly sanitized',
+    maintenanceUpToDate: 'Equipment maintenance is up to date'
+  },
+  wasteManagement: {
+    properDisposal: 'Waste is disposed of properly',
+    coveredBins: 'Waste bins are covered and clean',
+    regularCollection: 'Regular waste collection schedule followed',
+    pestControl: 'Effective pest control measures in place'
+  }
+};
 
-  router.get('/inspector/restaurants/add', (req, res) => {
-    const { zone, region } = req.session;
-    const { success } = req.query;
-  
-    if (!zone || !region) {
-      return res.status(403).render('error', { message: 'Unauthorized access. Session expired or not found.' });
+// Labels for rendering titles in EJS
+const sectionLabels = {
+  personalHygiene: 'Personal Hygiene',
+  premisesCleanliness: 'Premises Cleanliness',
+  foodStorage: 'Food Storage',
+  equipment: 'Equipment & Utensils',
+  wasteManagement: 'Waste Management'
+};
+
+// GET route to render the inspection form
+router.get('/inspection/start/:id', async (req, res) => {
+  const inspectionId = req.params.id;
+
+  try {
+    // Fetch the inspection by ID
+    const [inspectionResult] = await db.query(
+      'SELECT * FROM inspections WHERE id = ?',
+      [inspectionId]
+    );
+
+    if (inspectionResult.length === 0) {
+      return res.status(404).send('Inspection not found');
     }
-  
-    res.render('addRestaurant', { zone, region, success });
-  });
 
-  router.post('/inspector/restaurants/add', async (req, res) => {
-    const { name, license_number, email, phone, address } = req.body;
-    const zone = req.session.zone;
-    const region = req.session.region;
-    const created_by = req.session.ID;
-  
-    try {
-      await db.query(
-        `INSERT INTO restaurants 
-         (name, license_number, email, phone, zone, region, address, created_by) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [name, license_number, email, phone, zone, region, address, created_by]
-      );
-  
-      // Redirect with a success flag
-      res.redirect('/inspector/restaurants/add?success=1');
-    } catch (err) {
-      console.error('Error adding restaurant:', err);
-      res.status(500).render('error', { message: 'Failed to add restaurant.' });
+    const inspection = inspectionResult[0];
+
+    // Fetch the associated restaurant
+    const [restaurantResult] = await db.query(
+      'SELECT * FROM restaurants WHERE id = ?',
+      [inspection.restaurant_id]
+    );
+
+    if (restaurantResult.length === 0) {
+      return res.status(404).send('Restaurant not found');
     }
-  });
 
+    const restaurant = restaurantResult[0];
 
+    // ✅ Set the restaurant ID in session for use in POST route
+    req.session.restaurant_id = restaurant.id;
 
-  // Assuming you have Express and a database connection (like mysql)
-  router.get('/inspections/scheduled', async (req, res) => {
-    const inspectorId = req.session.ID;
-  
-    try {
-        const [rows] = await db.query(`
-            SELECT i.id AS inspection_id, r.name, r.license_number, r.phone, r.address, i.last_inspection
-            FROM inspections i
-            JOIN restaurants r ON i.restaurant_id = r.id
-            WHERE i.inspector_id = ? AND i.status = 'Scheduled'
-        `, [inspectorId]);
-  
-        res.render('inspectionScheduled', { scheduledInspections: rows });
-  
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+    // ✅ Optional: Also ensure inspector ID is set in session if not already
+    if (!req.session.ID && inspection.inspector_id) {
+      req.session.ID = inspection.inspector_id;
     }
-  });
-  
 
+    // Initial hygiene score is 0.0
+    const hygieneScore = 0.0;
+
+    // Badge color logic
+    const scoreBadge =
+      hygieneScore >= 4.0 ? 'green'
+      : hygieneScore >= 3.0 ? 'orange'
+      : 'red';
+
+    // Render the inspection page
+    res.render('startInspection', {
+      inspection,
+      restaurant,
+      checklistSchema,
+      sectionLabels,
+      hygieneScore,
+      scoreBadge
+    });
+
+  } catch (err) {
+    console.error('Error in GET /inspection/start/:id:', err);
+    res.status(500).send('Error fetching inspection data');
+  }
+});
+
+
+
+router.post('/inspection/submit/:id', upload.array('images'), async (req, res) => {
+  const { checklist, notes, latitude, longitude } = req.body;
+  const inspectionId = req.params.id;
+  const inspectorId = req.session.ID; // assuming login
+  const restaurantId = req.session.restaurant_id;
+
+  const images = req.files.map(f => f.filename);
+
+  try {
+    await db.query(`
+      INSERT INTO inspection_reports (inspection_id, inspector_id, restaurant_id, report_json, notes, image_paths, latitude, longitude)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      inspectionId,
+      inspectorId,
+      restaurantId,
+      JSON.stringify(checklist),
+      notes,
+      JSON.stringify(images),
+      latitude || null,
+      longitude || null
+    ]);
+
+    // Update inspection status
+    await db.query(`UPDATE inspections SET status = 'Completed', last_inspection = NOW() WHERE id = ?`, [inspectionId]);
+
+    res.redirect('/inspector/inspections/scheduled');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error saving report.');
+  }
+});
 
 
 // router.get('/inspections/start/:id', (req, res) => {
@@ -129,56 +341,6 @@ router.post('/inspectorLogin', async (req, res) => {
 //   res.render('startInspection', { inspectionId });
 // });
 
-
-  
-
-
-  router.get('/admin/inspectors',async (req, res)=>{
-     const zone = req.session.zone;
-  
-    if (!zone) {
-      return res.status(403).render('error', { message: 'Zone not assigned or session expired.' });
-    }
-    const [inspectors] = await db.query('Select * from inspectors where zone=?',[zone])
-    res.render('manageInspectors',{inspectors,zone})
-  })
-
-  router.get('/admin/restaurants',(req, res)=>{
-    const name = 'restaurants'
-    res.render('manageInspectors',{name})
-  })
-
-  router.get('/admin/reports',(req, res)=>{
-    name = 'reports'
-    res.render('manageInspectors',{name})
-  })
-
-  router.get('/admin/settings',(req, res)=>{
-    const name = 'settings';
-    res.render('manageInspectors',{name})
-  })
-
-  router.get('/admin/inspectors/add', (req, res) => {
-    if (!req.session.zone) {
-      return res.status(403).render('error', { message: 'Session expired' });
-    }
-    res.render('addInspector');
-  })
- 
-  router.get('/admin/inspectors/edit/:id', async (req, res) => {
-    const inspectorId = req.params.id;
-  
-    try {
-      const [results] = await db.query('SELECT * FROM inspectors WHERE id = ?', [inspectorId]);
-      if (results.length === 0) {
-        return res.status(404).render('error', { message: 'Inspector not found' });
-      }
-      res.render('editInspector', { inspector: results[0] });
-    } catch (err) {
-      console.error('Error fetching inspector:', err);
-      res.status(500).render('error', { message: 'Failed to load inspector data.' });
-    }
-  });
 
 const inspectionCategories = require('../data/inspectionCategories');
 router.get('/inspections/start/:id', async (req, res) => {
@@ -210,51 +372,6 @@ router.get('/inspections/start/:id', async (req, res) => {
 
   
 //Post
-
-  
-  router.post('/admin/inspectors/add', async (req, res) => {
-    const { name, email, phone, region, password } = req.body;
-    const zone = req.session.zone;
-  
-    try {
-      await db.query(
-        'INSERT INTO inspectors (name, email, phone, password, zone, region) VALUES (?, ?, ?, ?, ?, ?)',
-        [name, email, phone, password, zone, region]
-      );
-      res.redirect('/admin/inspectors');
-    } catch (err) {
-      console.error(err);
-      res.status(500).render('error', { message: 'Failed to add inspector.' });
-    }
-  });
-  
-  router.post('/admin/inspectors/delete/:id', async (req, res) => {
-    const inspectorId = req.params.id;
-  
-    try {
-      await db.query('DELETE FROM inspectors WHERE id = ?', [inspectorId]);
-      res.redirect('/admin/inspectors');
-    } catch (err) {
-      console.error('Error deleting inspector:', err);
-      res.status(500).render('error', { message: 'Failed to delete inspector.' });
-    }
-  });
-  router.post('/admin/inspectors/edit/:id', async (req, res) => {
-    const inspectorId = req.params.id;
-    const { name, email, phone, region } = req.body;
-  
-    try {
-      await db.query(
-        'UPDATE inspectors SET name = ?, email = ?, phone = ?, region = ? WHERE id = ?',
-        [name, email, phone, region, inspectorId]
-      );
-      res.redirect('/admin/inspectors');
-    } catch (err) {
-      console.error('Error updating inspector:', err);
-      res.status(500).render('error', { message: 'Failed to update inspector.' });
-    }
-  });
-
 
   router.post('/inspections/start/:id', async (req, res) => {
     const inspectionId = req.params.id;

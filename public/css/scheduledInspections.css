@@ -1,0 +1,183 @@
+:root {
+  --blue: #000000; /* Changed to black */
+  --green: #059669;
+  --orange: #f97316;
+  --gray: #6b7280;
+  --light: #f9fafb;
+  --dark: #1f2937;
+  --red: #dc2626;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--light);
+}
+
+.container {
+  padding: 40px 80px;
+}
+
+/* Header Section */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  font-size: 2rem;
+  margin: 0;
+}
+
+.header p {
+  color: var(--gray);
+}
+
+/* Total Inspections Count Section */
+.count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--blue); /* Now black */
+}
+
+/* Lucide Icons */
+.lucide-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--dark);
+}
+
+/* Grid of Inspection Cards */
+.grid {
+  display: grid;
+  gap: 24px;
+}
+
+/* Inspection Card */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-left h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.header-left p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--gray);
+}
+
+/* Badge Styles for Status */
+.badge {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  border-radius: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.badge.scheduled {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge.in-progress {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge.completed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* Card Content */
+.card-content p {
+  margin: 6px 0;
+  font-size: 0.9rem;
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Action Buttons */
+.actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn {
+  padding: 8px 18px;
+  background: var(--blue); /* Now black */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #222222; /* Slightly darker black */
+}
+
+.btn.outline {
+  background: transparent;
+  color: var(--blue); /* black text */
+  border: 2px solid var(--blue); /* black border */
+}
+
+.btn.outline:hover {
+  background: var(--blue); /* black background */
+  color: white;
+}
+
+/* Empty State */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 0;
+  color: var(--gray);
+}
+
+.empty-state .big {
+  width: 64px;
+  height: 64px;
+  color: #ccc;
+}
+
+.empty-state h3 {
+  margin-top: 12px;
+  font-size: 1.2rem;
+  color: var(--dark);
+}
+
+.empty-state p {
+  color: var(--gray);
+}
