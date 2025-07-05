@@ -211,3 +211,26 @@ CREATE TABLE users (
     phone VARCHAR(15),
     password VARCHAR(255) NOT NULL
 );
+
+
+
+
+CREATE TABLE favorites (
+user_id VARCHAR(255),
+restaurant_id INT,
+PRIMARY KEY (user_id, restaurant_id),
+FOREIGN KEY (user_id) REFERENCES users(email),
+FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
+);
+
+
+CREATE TABLE complaints (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id varchar(255),
+  restaurant_id INT,
+  message TEXT,
+  status ENUM('pending', 'in_review', 'resolved') DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(email),
+  FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
+);

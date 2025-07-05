@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Favorite Restaurants</title>
+  <link rel="stylesheet" href="/css/favorites.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+  <%- include('../partials/header3') %>
+
+  <div class="container">
+    <h1>My Favorite Restaurants</h1>
+    <p class="subtitle">Your bookmarked restaurants (<%= favorites.length %>)</p>
+
+    <% if (favorites.length === 0) { %>
+      <div class="card">
+        <div class="card-content text-center">
+          <i class="fa-regular fa-heart fa-2x" style="color: #ccc;"></i>
+          <h3>No Favorites Yet</h3>
+          <p>Start exploring restaurants and add them to your favorites!</p>
+          <a href="/user/search"><button class="details-btn">Search Restaurants</button></a>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="grid">
+        <% favorites.forEach(r => { %>
+          <div class="card restaurant-card">
+            <div class="top-section">
+              <h3><%= r.name %></h3>
+              <% 
+                let score = r.hygiene_score;
+                let scoreClass = 'badge-green';
+                if (score < 2) scoreClass = 'badge-red';
+                else if (score < 4) scoreClass = 'badge-orange';
+              %>
+              <span class="badge <%= scoreClass %>">Score: <%= score ? score : 'N/A' %> / 5</span>
+            </div>
+
+            <div class="info-section">
+              <p><strong>Location:</strong> <%= r.location %></p>
+              <p><strong>Zone:</strong> <%= r.zone %></p>
+              <% if (r.last_inspection) { %>
+                <p><strong>Last Inspected:</strong> <%= r.last_inspection.toISOString().split('T')[0] %></p>
+              <% } %>
+            </div>
+
+            <div class="button-group">
+              <form action="/user/restaurant/<%= r.id %>" method="get">
+                <button class="details-btn">View Details</button>
+              </form>
+              <form action="/user/complaint/<%= r.id %>" method="get">
+                <button class="details-btn complaint-btn">File Complaint</button>
+              </form>
+              <button 
+                    class="favorite-btn favorited" 
+                    data-id="<%= r.id %>" 
+                    onclick="confirmRemoveFavorite(event)" 
+                    title="Remove from Favorites">
+                    <i class="fa-solid fa-heart"></i>
+              </button>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</body>
+<script>
+    async function confirmRemoveFavorite(event) {
+      event.preventDefault();
+      const button = event.currentTarget;
+      const restaurantId = button.getAttribute('data-id');
+  
+      const confirmDelete = confirm("Are you sure you want to remove this restaurant from favorites?");
+      if (!confirmDelete) return;
+  
+      try {
+        const response = await fetch(`/user/favorite/${restaurantId}/remove`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+  
+        if (response.ok) {
+          // Remove the card from DOM
+          const card = button.closest('.restaurant-card');
+          card.remove();
+  
+          // Optionally update the count
+          const countElem = document.querySelector('.subtitle');
+          const currentCount = document.querySelectorAll('.restaurant-card').length;
+          countElem.innerText = `Your bookmarked restaurants (${currentCount})`;
+  
+          // Show empty state if none left
+          if (currentCount === 0) {
+            const grid = document.querySelector('.grid');
+            if (grid) grid.remove();
+
+            const container = document.querySelector('.container');
+
+            const noFavCard = document.createElement('div');
+            noFavCard.className = 'card';
+            noFavCard.innerHTML = `
+                <div class="card-content text-center">
+                <i class="fa-regular fa-heart fa-2x" style="color: #ccc;"></i>
+                <h3>No Favorites Yet</h3>
+                <p>Start exploring restaurants and add them to your favorites!</p>
+                <a href="/user/search"><button class="details-btn">Search Restaurants</button></a>
+                </div>
+            `;
+
+            // ✅ Append only inside content area, not the header!
+            container.appendChild(noFavCard);
+            }
+
+        } else {
+          alert("Failed to remove from favorites. Please try again.");
+        }
+      } catch (err) {
+        console.error("Error removing favorite:", err);
+        alert("Error occurred. Please try again later.");
+      }
+    }
+  </script>
+  
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Search Restaurants</title>
+  <link rel="stylesheet" href="/css/userSearch.css">
+  <script defer src="/js/searchLive.js"></script>
+  <script defer src="/js/favoriteToggle.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <%- include('../partials/header3') %>
+  <div class="container">
+    <h1>Search Restaurants</h1>
+    <p class="subtitle">Find restaurants in your area</p>
+
+    <div class="card">
+      <div class="card-header">Filters</div>
+      <div class="card-content">
+        <div class="filters">
+          <input type="text" id="searchBar" placeholder="Search restaurants by name..." />
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" id="restaurantGrid">
+      <% restaurants.forEach(restaurant => { %>
+        <div class="card restaurant-card">
+          <div class="top-section">
+            <h3><%= restaurant.name %></h3>
+
+            <% 
+              let score = restaurant.hygiene_score;
+              let scoreClass = 'badge-green';
+              if (score < 2) scoreClass = 'badge-red';
+              else if (score < 4) scoreClass = 'badge-orange';
+            %>
+            <span class="badge <%= scoreClass %>">Score: <%= score %> / 5</span>
+          </div>
+
+          <div class="info-section">
+            <p><strong>Location:</strong> <%= restaurant.location %></p>
+            <p><strong>Zone:</strong> <%= restaurant.zone %></p>
+          </div>
+
+          <div class="button-group">
+            <form action="/user/restaurant/<%= restaurant.id %>" method="get" style="display: inline;">
+              <button type="submit" class="details-btn">View Details</button>
+            </form>
+
+            <form action="/user/complaint/<%= restaurant.id %>" method="get" style="display: inline;">
+              <button type="submit" class="details-btn complaint-btn">File Complaint</button>
+            </form>
+
+            <button class="favorite-btn <%= restaurant.is_favorite ? 'favorited' : '' %>" 
+                data-id="<%= restaurant.id %>" 
+                data-fav="<%= restaurant.is_favorite %>" 
+                title="<%= restaurant.is_favorite ? 'Remove from Favorites' : 'Add to Favorites' %>">
+          <i class="<%= restaurant.is_favorite ? 'fa-solid fa-heart' : 'fa-regular fa-heart' %>"></i>
+        </button>
+        
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</body>
+</html>
