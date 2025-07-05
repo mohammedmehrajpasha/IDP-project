@@ -3,12 +3,12 @@ const router = express.Router();
 const db = require('../config/dbConnect');
 
 router.get('/userLogin',(req,res)=>{
-    res.render('userLogin');
+    res.render('userViews/userLogin');
   })
 
 
 router.get('/userSignup',(req,res)=>{
-    res.render('userSignup');
+    res.render('userViews/userSignup');
   })
 
   router.post('/userSignup', async (req, res) => {

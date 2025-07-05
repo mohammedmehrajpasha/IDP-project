@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Inspector Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/login.css" />
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="icon">
+        <svg xmlns="http://www.w3.org/2000/svg" class="lucide lucide-shield" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>
+        </svg>
+      </div>
+      <h1>FSSAI Inspector Hub</h1>
+      <p>Food Safety & Standards Authority of India</p>
+
+      <form action="/userLogin" method="POST" class="mt-6">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="E mail" required />
+        </div>
+
+        <div class="form-group relative">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Password" required />
+        </div>
+
+        <button type="submit" class="btn-submit">Sign In</button>
+        <p>Don’t have an account? <a href="/userSignup"><strong>Signup here</strong></a></p>
+      </form>
+      
+    </div>
+  </div>
+</body>
+</html>

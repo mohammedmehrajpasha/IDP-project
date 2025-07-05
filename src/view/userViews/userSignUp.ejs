@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>User Signup</title>
+  <link rel="stylesheet" href="/css/login.css" />
+</head>
+<body>
+
+
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="icon">
+        <svg xmlns="http://www.w3.org/2000/svg" class="lucide lucide-user-plus" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M15 14a4 4 0 1 0-8 0v5h8v-5ZM17 11h4m-2-2v4M12 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
+        </svg>
+      </div>
+
+      <h1>User Signup</h1>
+      <p>Create your account</p>
+
+      <% if (typeof error !== 'undefined') { %>
+        <div class="error-message" style="color: red; margin-bottom: 10px;"><%= error %></div>
+      <% } %>
+
+      <form action="/userSignup" method="POST" class="mt-6">
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name" placeholder="Your Name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="Email" required />
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="text" id="phone" name="phone" placeholder="Phone" required />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Password" required />
+        </div>
+
+        <button type="submit" class="btn-submit">Sign Up</button>
+
+        <p style="margin-top: 1rem;">Already have an account? <a href="/userLogin"><strong>Login here</strong></a></p>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>
