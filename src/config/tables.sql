@@ -226,11 +226,15 @@ FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
 
 CREATE TABLE complaints (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id varchar(255),
-  restaurant_id INT,
-  message TEXT,
-  status ENUM('pending', 'in_review', 'resolved') DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(email),
-  FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
+  user_id varchar(255) NOT NULL,
+  restaurant_id INT NOT NULL,
+  subject VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  is_anonymous BOOLEAN DEFAULT FALSE,
+  status ENUM('pending', 'in-progress', 'resolved', 'rejected') DEFAULT 'pending',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (user_id) REFERENCES users(email) ON DELETE CASCADE,
+  FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
 );

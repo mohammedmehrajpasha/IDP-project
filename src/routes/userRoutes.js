@@ -177,5 +177,42 @@ router.get('/user/favorites', async (req, res) => {
 });
 
 
+router.get('/user/complaints', async (req, res) => {
+  try {
+    const userId = req.session.email; // Make sure session contains userId
+
+    // Fetch all restaurants (for dropdown)
+    const [restaurants] = await db.query("SELECT id, name, zone FROM restaurants WHERE status = 'approved'");
+
+    // Fetch user's complaints
+    const [complaints] = await db.query(`
+      SELECT c.*, r.name AS restaurant_name 
+      FROM complaints c
+      JOIN restaurants r ON c.restaurant_id = r.id
+      WHERE c.user_id = ?
+      ORDER BY c.created_at DESC
+    `, [userId]);
+
+    res.render('userViews/complaints', { complaints, restaurants });
+
+  } catch (err) {
+    console.error("Error fetching complaints:", err);
+    res.status(500).send("Server error");
+  }
+});
+
+// Submit Complaint
+router.post('/user/complaints', async (req, res) => {
+  const { restaurantId, subject, message, isAnonymous } = req.body;
+  const userId = req.session.email;
+
+  await db.query(`
+    INSERT INTO complaints (user_id, restaurant_id, subject, message, status, created_at, is_anonymous)
+    VALUES (?, ?, ?, ?, 'pending', NOW(), ?)
+  `, [userId, restaurantId, subject, message, isAnonymous ? 1 : 0]);
+
+  res.redirect('/user/complaints');
+});
+
 
 module.exports = router; 

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Complaints & Feedback</title>
+  <link rel="stylesheet" href="/css/complaints.css">
+</head>
+<body>
+  <%- include('../partials/header3') %>
+
+  <div class="complaints-container">
+    <div class="complaints-wrapper">
+      <h1>Complaints & Feedback</h1>
+      <p class="subtitle">File complaints and track their status</p>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-button active" onclick="switchTab('fileTab', this)">File Complaint</button>
+        <button class="tab-button" onclick="switchTab('historyTab', this)">My Complaints (<%= complaints.length %>)</button>
+      </div>
+
+      <!-- File Complaint Tab -->
+      <div id="fileTab" class="tab-content">
+        <form action="/user/complaints" method="POST" onsubmit="return disableSubmit(this)">
+          <label for="restaurantId">Select Restaurant *</label>
+          <select name="restaurantId" id="restaurantId" required>
+            <option value="">Choose a restaurant</option>
+            <% restaurants.forEach(r => { %>
+              <option value="<%= r.id %>"><%= r.name %> - <%= r.zone %></option>
+            <% }) %>
+          </select>
+
+          <label for="subject">Subject *</label>
+          <input type="text" id="subject" name="subject" placeholder="Brief description of the issue" required>
+
+          <label for="message">Detailed Description *</label>
+          <textarea id="message" name="message" rows="5" required></textarea>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="anonymous" name="isAnonymous">
+            <label for="anonymous">Submit anonymously</label>
+          </div>
+
+          <div class="guidelines">
+            <h4>Complaint Guidelines</h4>
+            <ul>
+              <li>Be specific and factual in your complaint</li>
+              <li>Include dates, times, and details when possible</li>
+              <li>Avoid offensive or inappropriate language</li>
+              <li>Complaints are reviewed within 2–3 business days</li>
+            </ul>
+          </div>
+
+          <button type="submit" class="submit-btn">Submit Complaint</button>
+        </form>
+      </div>
+
+      <!-- Complaint History Tab -->
+      <div id="historyTab" class="tab-content" style="display: none;">
+        <% if (complaints.length === 0) { %>
+          <p class="empty-msg">No Complaints Filed</p>
+        <% } else { %>
+          <% complaints.forEach(c => { %>
+            <div class="complaint-card">
+              <h3><%= c.subject %></h3>
+              <p><strong>Restaurant:</strong> <%= c.restaurant_name %>
+                <% if (c.is_anonymous) { %>
+                  <span class="anonymous-label">• Anonymous</span>
+                <% } %>
+              </p>
+              <p><%= c.message %></p>
+              <p>Status: <span class="status-label <%= c.status %>"><%= c.status %></span></p>
+              <p>Filed on: <%= new Date(c.created_at).toDateString() %></p>
+              <% if (c.updated_at) { %>
+                <p>Updated on: <%= new Date(c.updated_at).toDateString() %></p>
+              <% } %>
+              <% if (c.status === 'resolved') { %>
+                <div class="resolution-msg">✅ Your complaint has been addressed and resolved.</div>
+              <% } %>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tabId, button) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabId).style.display = 'block';
+      button.classList.add('active');
+    }
+
+    function disableSubmit(form) {
+      const button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      button.textContent = 'Submitting...';
+      return true;
+    }
+  </script>
+</body>
+</html>
