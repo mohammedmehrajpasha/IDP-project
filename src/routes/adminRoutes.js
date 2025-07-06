@@ -499,9 +499,9 @@ router.post('/admin/reports/approve/:id', async (req, res) => {
     // Update restaurants table with new score & date
     await db.query(`
       UPDATE restaurants 
-      SET hygiene_score = ?, last_inspection_date = ?
+      SET hygiene_score = ?, last_inspection_date = ?, insp_rep_id = ?
       WHERE id = ?
-    `, [report.hygiene_score, report.last_inspection, report.restaurant_id]);
+    `, [report.hygiene_score, report.last_inspection, reportId, report.restaurant_id]);
 
     res.redirect('/admin/reports');
   } catch (err) {
