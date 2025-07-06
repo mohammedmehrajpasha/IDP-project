@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/dbConnect');
 
+const { checklistSchema, sectionLabels } = require('../data/inspectionCategories');
+
 router.get('/userLogin',(req,res)=>{
     res.render('userViews/userLogin');
   })
@@ -72,9 +74,6 @@ router.get('/user/dashboard', async (req, res) => {
     id: req.session.email,
     name:req.session.Name
   };
-
-  console.log("id"+user.id)
-  console.log("name"+user.name)
 
   try {
     const [restaurantRows] = await db.query("SELECT COUNT(*) AS total FROM restaurants WHERE status = 'approved'");
@@ -213,6 +212,77 @@ router.post('/user/complaints', async (req, res) => {
 
   res.redirect('/user/complaints');
 });
+
+// GET /user/restaurant/:id
+router.get('/user/restaurant/:id', async (req, res) => {
+  const restaurantId = req.params.id;
+
+  try {
+    // Fetch restaurant
+    const [[restaurant]] = await db.query('SELECT * FROM restaurants WHERE id = ?', [restaurantId]);
+    if (!restaurant) return res.status(404).render('error', { message: 'Restaurant not found.' });
+
+    let report = null;
+    let inspector = null;
+    let scoreColor = '';
+    let reportData = {};
+    let imageUrls = [];
+
+    if (restaurant.insp_rep_id) {
+      const [[r]] = await db.query(`
+        SELECT ir.*, ins.name AS inspector_name
+        FROM inspection_reports ir
+        JOIN inspectors ins ON ins.id = ir.inspector_id
+        WHERE ir.id = ?
+      `, [restaurant.insp_rep_id]);
+
+      if (r) {
+        // Parse JSON fields
+        try {
+          reportData = typeof r.report_json === 'string' ? JSON.parse(r.report_json) : r.report_json;
+        } catch (e) {
+          console.error('Invalid JSON in report_json:', e.message);
+        }
+
+        try {
+          imageUrls = typeof r.image_paths === 'string' ? JSON.parse(r.image_paths) : r.image_paths || [];
+        } catch (e) {
+          console.error('Invalid JSON in image_paths:', e.message);
+        }
+
+        const hygieneScore = parseFloat(r.hygiene_score);
+        scoreColor = hygieneScore >= 4 ? 'green' : hygieneScore >= 3 ? 'orange' : 'red';
+
+        report = {
+          ...r,
+          hygiene_score: hygieneScore,
+          report_data: reportData,
+          image_urls: imageUrls
+        };
+
+        inspector = {
+          name: r.inspector_name
+        };
+      }
+    }
+
+    res.render('userViews/viewRestaurant', {
+      restaurant,
+      report,
+      inspector,
+      scoreColor,
+      checklistSchema,
+      sectionLabels
+    });
+
+  } catch (err) {
+    console.error('Failed to load restaurant details:', err);
+    res.status(500).render('error', { message: 'Internal server error' });
+  }
+});
+
+module.exports = router;
+
 
 
 module.exports = router; 

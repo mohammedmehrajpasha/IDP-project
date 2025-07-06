@@ -67,7 +67,8 @@ CREATE TABLE restaurants (
   created_by INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   last_inspection_date DATE DEFAULT NULL,
-  hygiene_score DECIMAL(2,1) CHECK (hygiene_score BETWEEN 1.0 AND 5.0)
+  hygiene_score DECIMAL(2,1) CHECK (hygiene_score BETWEEN 1.0 AND 5.0),
+  insp_rep_id INT
 );
 
 
@@ -212,9 +213,6 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL
 );
 
-
-
-
 CREATE TABLE favorites (
 user_id VARCHAR(255),
 restaurant_id INT,
@@ -222,7 +220,6 @@ PRIMARY KEY (user_id, restaurant_id),
 FOREIGN KEY (user_id) REFERENCES users(email),
 FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
 );
-
 
 CREATE TABLE complaints (
   id INT AUTO_INCREMENT PRIMARY KEY,
