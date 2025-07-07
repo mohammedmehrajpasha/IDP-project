@@ -14,9 +14,7 @@ router.get('/fssai-chatbot', async (req, res) => {
 
     // Format restaurant info into HTML links
     const restaurantSection = restaurants.map(r =>
-      `🏢 <strong>${r.name}</strong> (Zone: ${r.zone}, Region: ${r.region}, Hygiene Score: ${r.hygiene_score}, License No: ${r.license_number}, Last Inspection: ${r.last_inspection_date}, Contact: ${r.contact_person}, 📞 ${r.phone})<br>
-      ➤ <a href="/user/view-report/${r.id}" target="_blank">📄 View Report</a> | 
-      <a href="/user/file-complaint/${r.id}" target="_blank">📝 File Complaint</a>`
+      `🏢 <strong>${r.name}</strong> (Zone: ${r.zone}, Region: ${r.region}, Hygiene Score: ${r.hygiene_score}, License No: ${r.license_number}, Last Inspection: ${r.last_inspection_date}, Contact: ${r.contact_person}, 📞 ${r.phone})`
     ).join('<br><br>');
 
 

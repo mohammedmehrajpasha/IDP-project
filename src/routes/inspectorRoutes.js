@@ -472,6 +472,8 @@ router.get('/inspector/view-report/:id', async (req, res) => {
 });
 
 
+
+
 router.get('/inspector/view-report/:id/pdf', async (req, res) => {
   const reportId = req.params.id;
 
@@ -549,8 +551,82 @@ router.get('/inspector/view-report/:id/pdf', async (req, res) => {
 });
 
 
+router.get('/inspector/complaints', async (req, res) => {
+  try {
+    const inspectorZone = req.session.zone;
+    const inspectorRegion = req.session.region;
+
+    const [pending] = await db.query(`
+      SELECT c.*, u.name AS user_name, r.name AS restaurant_name
+      FROM complaints c
+      JOIN users u ON c.user_id = u.email
+      JOIN restaurants r ON c.restaurant_id = r.id
+      WHERE c.status = 'pending' AND r.zone = ? AND r.region = ?
+      ORDER BY c.created_at DESC
+    `, [inspectorZone, inspectorRegion]);
+
+    const [resolved] = await db.query(`
+      SELECT c.*, u.name AS user_name, r.name AS restaurant_name
+      FROM complaints c
+      JOIN users u ON c.user_id = u.email
+      JOIN restaurants r ON c.restaurant_id = r.id
+      WHERE c.status = 'resolved' AND r.zone = ? AND r.region = ?
+      ORDER BY c.updated_at DESC
+    `, [inspectorZone, inspectorRegion]);
+
+    res.render('inspViewComplaints', { pending, resolved });
+  } catch (err) {
+    console.error('Error fetching complaints:', err);
+    res.status(500).send('Server error');
+  }
+});
 
 
+
+router.get('/inspector/complaints/:id', async (req, res) => {
+  const complaintId = req.params.id;
+  const inspectorZone = req.session.zone;
+  const inspectorRegion = req.session.region;
+
+  try {
+    const [[complaint]] = await db.query(`
+      SELECT c.*, u.name AS user_name, r.name AS restaurant_name, r.zone, r.region
+      FROM complaints c
+      JOIN users u ON c.user_id = u.email
+      JOIN restaurants r ON c.restaurant_id = r.id
+      WHERE c.id = ? AND r.zone = ? AND r.region = ?
+    `, [complaintId, inspectorZone, inspectorRegion]);
+
+    if (!complaint) return res.status(404).send('Complaint not found or unauthorized');
+
+    res.render('detailedComplaint', { complaint });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error loading complaint details');
+  }
+});
+
+
+
+
+
+router.post('/inspector/complaints/resolve/:id', async (req, res) => {
+  const complaintId = req.params.id;
+  const { resolution } = req.body;
+
+  try {
+    await db.query(`
+      UPDATE complaints 
+      SET status = 'resolved', resolution_taken = ?, updated_at = NOW()
+      WHERE id = ?
+    `, [resolution, complaintId]);
+
+    res.redirect('/inspector/complaints');
+  } catch (err) {
+    console.error('Error resolving complaint:', err);
+    res.status(500).send('Failed to resolve complaint');
+  }
+});
 
 
 

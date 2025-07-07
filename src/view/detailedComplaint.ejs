@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Complaint Details</title>
+  <link rel="stylesheet" href="/css/detailedComplaint.css">
+</head>
+<body>
+  <h1>📋 Complaint Details</h1>
+
+  <p><strong>Restaurant:</strong> <%= complaint.restaurant_name %></p>
+  <p><strong>Submitted by:</strong> <%= complaint.user_name %> <% if (complaint.is_anonymous) { %>(Anonymous)<% } %></p>
+  <p><strong>Submitted on:</strong> <%= new Date(complaint.created_at).toLocaleString() %></p>
+  <p><strong>Subject:</strong> <%= complaint.subject %></p>
+  <p><strong>Description:</strong> <%= complaint.message %></p>
+
+  <% if (complaint.images && JSON.parse(complaint.images).length > 0) { %>
+    <p><strong>Images:</strong></p>
+    <% JSON.parse(complaint.images).forEach(image => { %>
+      <img src="/uploads/<%= image %>" width="200" style="margin: 10px;" />
+    <% }) %>
+  <% } %>
+
+  <% if (complaint.status === 'pending') { %>
+    <form action="/inspector/complaints/resolve/<%= complaint.id %>" method="POST">
+      <label for="resolution">Resolution Taken:</label><br>
+      <textarea name="resolution" required rows="4" cols="50"></textarea><br><br>
+      <button type="submit">Resolve Complaint</button>
+    </form>
+  <% } else { %>
+    <p><strong>Resolution:</strong> <%= complaint.resolution_taken %></p>
+    <p><strong>Resolved on:</strong> <%= new Date(complaint.updated_at).toLocaleString() %></p>
+  <% } %>
+</body>
+</html>

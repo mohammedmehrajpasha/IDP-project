@@ -230,3 +230,6 @@ CREATE TABLE complaints (
 
 
 ALTER TABLE complaints ADD COLUMN images TEXT;
+
+ALTER TABLE complaints ADD COLUMN resolution_taken TEXT AFTER message;
+
