@@ -40,6 +40,12 @@
   <% ['pending', 'approved', 'rejected'].forEach(tab => {
        const reports = tab === 'pending' ? pending : (tab === 'approved' ? approved : rejected); %>
     <div class="tab-content <%= tab === 'pending' ? 'active' : '' %>" id="<%= tab %>">
+      <!-- Search Bar for each tab -->
+      <div class="search-bar">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" id="<%= tab %>Search" placeholder="Search by restaurant, inspector or license...">
+      </div>
+      
       <% if (reports.length === 0) { %>
         <div class="empty-state">
           <i data-lucide="file-text" class="lucide-icon gray large"></i>
@@ -48,7 +54,10 @@
       <% } else { %>
         <div class="reports-grid">
           <% reports.forEach(r => { %>
-            <div class="report-card">
+            <div class="report-card" 
+                 data-restaurant="<%= r.restaurant_name.toLowerCase() %>"
+                 data-inspector="<%= r.inspector_name.toLowerCase() %>"
+                 data-license="<%= r.license_number.toLowerCase() %>">
               <div class="report-header">
                 <div>
                   <h3><%= r.restaurant_name %></h3>
@@ -79,6 +88,8 @@
 
 <script>
   lucide.createIcons();
+  
+  // Tab Switching
   const tabs = document.querySelectorAll('.tab-btn');
   const contents = document.querySelectorAll('.tab-content');
   tabs.forEach(btn => {
@@ -88,6 +99,28 @@
       contents.forEach(c => c.classList.remove('active'));
       document.getElementById(btn.dataset.tab).classList.add('active');
     });
+  });
+
+  // Search Functionality for each tab
+  ['pending', 'approved', 'rejected'].forEach(tab => {
+    const searchInput = document.getElementById(`${tab}Search`);
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const cards = document.querySelectorAll(`#${tab} .report-card`);
+        
+        cards.forEach(card => {
+          const restaurant = card.dataset.restaurant || '';
+          const inspector = card.dataset.inspector || '';
+          const license = card.dataset.license || '';
+          
+          const match = restaurant.includes(query) || 
+                       inspector.includes(query) || 
+                       license.includes(query);
+          card.style.display = match ? '' : 'none';
+        });
+      });
+    }
   });
 </script>
 

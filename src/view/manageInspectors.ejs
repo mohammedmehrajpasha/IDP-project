@@ -26,6 +26,12 @@
     <strong>Zone:</strong> <%= zone %>
   </div>
 
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <i data-lucide="search" class="search-icon"></i>
+    <input type="text" id="inspectorSearch" placeholder="Search by name, email, phone or region...">
+  </div>
+
   <div class="inspectors-table">
     <table>
       <thead>
@@ -40,7 +46,10 @@
       </thead>
       <tbody>
         <% inspectors.forEach(inspector => { %>
-          <tr>
+          <tr data-name="<%= inspector.name.toLowerCase() %>" 
+              data-email="<%= inspector.email.toLowerCase() %>"
+              data-phone="<%= inspector.phone.toLowerCase() %>"
+              data-region="<%= inspector.region.toLowerCase() %>">
             <td><%= inspector.id %></td>
             <td><%= inspector.name %></td>
             <td><%= inspector.email %></td>
@@ -63,9 +72,27 @@
   </div>
 </section>
 
-
 <script>
   lucide.createIcons();
+
+  // Search functionality
+  document.getElementById('inspectorSearch').addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    const rows = document.querySelectorAll('.inspectors-table tbody tr');
+    
+    rows.forEach(row => {
+      const name = row.dataset.name || '';
+      const email = row.dataset.email || '';
+      const phone = row.dataset.phone || '';
+      const region = row.dataset.region || '';
+      
+      const match = name.includes(query) || 
+                   email.includes(query) || 
+                   phone.includes(query) || 
+                   region.includes(query);
+      row.style.display = match ? '' : 'none';
+    });
+  });
 </script>
 </body>
 </html>

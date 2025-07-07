@@ -4,35 +4,51 @@ const db = require('../config/dbConnect');
 
 const { checklistSchema, sectionLabels } = require('../data/inspectionCategories');
 
-router.get('/adminLogin',(req,res)=>{
-  res.render('adminLogin');
-})
+router.get('/adminLogin', (req, res) => {
+  // Pass empty error variable if none exists
+  const error = req.query.error || null;
+  res.render('adminLogin', { error });
+});
+// Update the dashboard route to handle success parameter
+// Update the dashboard route to handle success parameter
 router.get('/admin/dashboard', async (req, res) => {
+  const success = req.query.success;
   const adminName = req.session.adminName;
   const zone = req.session.zone;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
-  const [inspectors] = await db.query('SELECT * FROM inspectors WHERE zone = ?', [zone]);
-  const [restaurants] = await db.query('SELECT * FROM restaurants WHERE zone = ?', [zone]);
-  const [reports] = await db.query('SELECT * FROM inspection_reports WHERE status="approved"');
+  try {
+    const [inspectors] = await db.query('SELECT * FROM inspectors WHERE zone = ?', [zone]);
+    const [restaurants] = await db.query('SELECT * FROM restaurants WHERE zone = ?', [zone]);
+    const [reports] = await db.query('SELECT * FROM inspection_reports WHERE status="approved"');
 
-  const stats = {
-    totalInspectors: inspectors.length,
-    approvedRestaurants: restaurants.filter(r => r.status === 'approved').length,
-    pendingRestaurants: restaurants.filter(r => r.status === 'pending').length,
-    totalReports: reports.length
-  };
+    const stats = {
+      totalInspectors: inspectors.length,
+      approvedRestaurants: restaurants.filter(r => r.status === 'approved').length,
+      pendingRestaurants: restaurants.filter(r => r.status === 'pending').length,
+      totalReports: reports.length
+    };
 
-  res.render('adminDashboard', {
-    layout: 'layout',
-    path: req.path,
-    adminName,
-    zone,
-    stats
-  });
+    res.render('adminDashboard', {
+      adminName,
+      zone,
+      stats,
+      success // Pass success to template
+    });
+
+  } catch (err) {
+    console.error('Error loading admin dashboard:', err);
+    res.status(500).render('error', { message: 'Failed to load dashboard data.' });
+  }
 });
 
 router.get('/admin/inspectors',async (req, res)=>{
    const zone = req.session.zone;
+   if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   if (!zone) {
     return res.status(403).render('error', { message: 'Zone not assigned or session expired.' });
@@ -41,19 +57,20 @@ router.get('/admin/inspectors',async (req, res)=>{
   res.render('manageInspectors',{inspectors,zone})
 })
 
-router.get('/admin/settings',(req, res)=>{
-  const name = 'settings';
-  res.render('manageInspectors',{name})
-})
-
 router.get('/admin/inspectors/add', (req, res) => {
   const zone = req.session.zone;
   const success = req.query.success;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
   res.render('addInspector', { zone, success });
 });
 
 router.get('/admin/inspectors/edit/:id', async (req, res) => {
   const inspectorId = req.params.id;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   try {
     const [results] = await db.query('SELECT * FROM inspectors WHERE id = ?', [inspectorId]);
@@ -69,6 +86,9 @@ router.get('/admin/inspectors/edit/:id', async (req, res) => {
 
 router.get('/admin/restaurants', async (req, res) => {
   const zone = req.session.zone;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   const [restaurants] = await db.query(
     'SELECT * FROM restaurants WHERE zone = ?', [zone]
@@ -90,6 +110,9 @@ router.get('/admin/restaurants', async (req, res) => {
 // Route: GET /admin/restaurants/edit/:id
 router.get('/admin/restaurants/edit/:id', async (req, res) => {
   const restaurantId = req.params.id;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   try {
     const [rows] = await db.query('SELECT * FROM restaurants WHERE id = ?', [restaurantId]);
@@ -108,6 +131,9 @@ router.get('/admin/restaurants/edit/:id', async (req, res) => {
 
 router.get('/admin/restaurants', async (req, res) => {
   const zone = req.session.zone;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   const [restaurants] = await db.query('SELECT * FROM restaurants WHERE zone = ?', [zone]);
   const pendingRestaurants = restaurants.filter(r => r.status === 'pending');
@@ -152,6 +178,9 @@ router.get('/admin/restaurants', async (req, res) => {
 // });
 router.get('/admin/reports', async (req, res) => {
   const zone = req.session.zone;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   try {
     const [all] = await db.query(`
@@ -190,6 +219,9 @@ router.get('/admin/reports', async (req, res) => {
 
 router.get('/admin/reports/:id', async (req, res) => {
   const reportId = req.params.id;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   try {
     const [[report]] = await db.query(`
@@ -256,6 +288,9 @@ router.get('/admin/reports/:id', async (req, res) => {
 
 router.get('/admin/inspections/schedule', async (req, res) => {
   const zone = req.session.zone;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   try {
     const [restaurants] = await db.query(`
@@ -311,37 +346,36 @@ router.get('/admin/inspections/schedule', async (req, res) => {
   }
 });
 
+//POST
+router.post('/adminLogin', async (req, res) => {
+  const { email, password } = req.body;
 
-
-
-
-
-
-router.post('/adminLogin',async (req, res)=>{
-  const {email, password} = req.body;
   if (!email || !password) {
-    return res.status(400).render('error', { message: "All fields are required" });
+    return res.redirect('/adminLogin?error=Email and password are required');
   }
 
-  try{
+  try {
     const [results] = await db.query("SELECT * FROM admins WHERE email = ?", [email]);
-    
+
     if (results.length === 0 || results[0].password !== password) {
-      return res.status(401).render('error', { message: "Invalid ID or password" });
+      return res.redirect('/adminLogin?error=Invalid credentials');
     }
+
     req.session.zone = results[0].zone;
     req.session.adminName = results[0].name;
-    res.redirect('admin/dashboard')
-  }
-  catch(err){
+    res.redirect('/admin/dashboard?success=1'); // This is correct
+  } catch (err) {
     console.error("Database error:", err);
-    res.status(500).render('error', { message: "Internal server error" });
+    res.redirect('/adminLogin?error=Internal server error');
   }
-})
+});
 
 router.post('/admin/inspectors/add', async (req, res) => {
   const { name, email, phone, password, region } = req.body;
   const zone = req.session.zone;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   try {
     await db.query(`
@@ -358,6 +392,9 @@ router.post('/admin/inspectors/add', async (req, res) => {
 
 router.post('/admin/inspectors/delete/:id', async (req, res) => {
   const inspectorId = req.params.id;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   try {
     await db.query('DELETE FROM inspectors WHERE id = ?', [inspectorId]);
@@ -371,6 +408,9 @@ router.post('/admin/inspectors/delete/:id', async (req, res) => {
 router.post('/admin/inspectors/edit/:id', async (req, res) => {
   const { id } = req.params;
   const { name, email, phone, region } = req.body;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   try {
     await db.query(
@@ -385,6 +425,10 @@ router.post('/admin/inspectors/edit/:id', async (req, res) => {
 });
 
 router.post('/admin/restaurants/edit/:id', async (req, res) => {
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
+
   const { name, license_number, contact_person, phone, email, address, region, status } = req.body;
   await db.query(
     'UPDATE restaurants SET name=?, license_number=?, contact_person=?, phone=?, email=?, address=?, region=?, status=? WHERE id=?',
@@ -394,6 +438,10 @@ router.post('/admin/restaurants/edit/:id', async (req, res) => {
 });
 
 router.post('/admin/restaurants/delete/:id', async (req, res) => {
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
+
   try {
     await db.query('UPDATE restaurants SET status = "rejected" WHERE id = ?', [req.params.id]);
     res.redirect('/admin/restaurants');
@@ -404,6 +452,10 @@ router.post('/admin/restaurants/delete/:id', async (req, res) => {
 });
 
 router.post('/admin/restaurants/restore/:id', async (req, res) => {
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
+
   try {
     await db.query('UPDATE restaurants SET status = "approved" WHERE id = ?', [req.params.id]);
     res.redirect('/admin/restaurants');
@@ -418,13 +470,16 @@ router.post('/admin/restaurants/restore/:id', async (req, res) => {
 
 
 router.get('/admin/inspections',async (req, res)=>{
-  
+
   res.render('manageInspection')
 })
 
 // Schedule a new inspection for a restaurant
 router.get('/admin/restaurants/schedule/:id', async (req, res) => {
   const restaurantId = req.params.id;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   try {
     // First, fetch restaurant details to find:
@@ -458,6 +513,9 @@ router.get('/admin/restaurants/schedule/:id', async (req, res) => {
 router.get('/admin/restaurants/view', async (req, res) => {
   const zone = req.session.zone;
   const { success } = req.query;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   try {
     const [approvedRestaurants] = await db.query(`
@@ -480,6 +538,9 @@ router.get('/admin/restaurants/view', async (req, res) => {
 router.post('/admin/reports/approve/:id', async (req, res) => {
   const reportId = req.params.id;
 
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
   try {
     // Get restaurant_id, hygiene_score, inspection_id
     const [[report]] = await db.query(`
@@ -512,6 +573,9 @@ router.post('/admin/reports/approve/:id', async (req, res) => {
 
 router.post('/admin/reports/reject/:id', async (req, res) => {
   const reportId = req.params.id;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   try {
     await db.query(`UPDATE inspection_reports SET status = 'rejected' WHERE id = ?`, [reportId]);
@@ -525,6 +589,9 @@ router.post('/admin/reports/reject/:id', async (req, res) => {
 
 router.post('/admin/inspections/schedule', async (req, res) => {
   const { restaurant_id, inspector_id, inspection_date } = req.body;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   try {
     await db.query(`
@@ -541,6 +608,9 @@ router.post('/admin/inspections/schedule', async (req, res) => {
 
 router.post('/admin/inspections/delete/:id', async (req, res) => {
   const inspectionId = req.params.id;
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
 
   try {
     await db.query('DELETE FROM inspections WHERE id = ?', [inspectionId]);
@@ -551,16 +621,25 @@ router.post('/admin/inspections/delete/:id', async (req, res) => {
   }
 });
 router.post('/admin/restaurants/approve/:id', async (req, res) => {
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
   await db.query('UPDATE restaurants SET status = "approved" WHERE id = ?', [req.params.id]);
   res.redirect('/admin/restaurants');
 });
 
 
 router.post('/admin/restaurants/reject/:id', async (req, res) => {
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
   await db.query('UPDATE restaurants SET status = "rejected" WHERE id = ?', [req.params.id]);
   res.redirect('/admin/restaurants');
 });
 router.get('/admin/restaurants/approvals',async (req, res)=>{
+  if (!req.session.adminName || !req.session.zone) {
+  return res.redirect('/adminLogin');
+}
   const [pendingRestaurants] = await db.query('SELECT * FROM restaurants where status=?',['pending']);
   res.render('restaurantsApproval',{pendingRestaurants})
 })

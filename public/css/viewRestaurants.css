@@ -6,6 +6,8 @@
   --gray: #6b7280;
   --light: #f9fafb;
   --dark: #1f2937;
+  --black: #111;
+  --border: #e5e7eb;
 }
 
 body {
@@ -14,14 +16,17 @@ body {
   background: var(--light);
 }
 
-.container {
-  padding: 40px 80px;
+.wrapper {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 20px;
 }
 
 .header h1 {
@@ -31,6 +36,7 @@ body {
 
 .header p {
   color: var(--gray);
+  margin-top: 4px;
 }
 
 .location {
@@ -41,44 +47,72 @@ body {
   color: var(--blue);
 }
 
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: 2px solid var(--black);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn.active,
+.tab-btn:hover {
+  background-color: var(--black);
+  color: white;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Search Bar */
 .search-card {
-  margin-top: 30px;
-}
-
-.search-card h2 {
-  margin: 0;
-  font-size: 1.2rem;
-}
-
-.search-card p {
-  font-size: 0.9rem;
-  color: var(--gray);
+  margin-bottom: 25px;
+  width: 85%;
 }
 
 .search-input {
   position: relative;
-  margin-top: 10px;
 }
 
 .search-input input {
   width: 100%;
-  padding: 12px 16px 12px 36px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: 12px 16px 12px 42px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
   font-size: 1rem;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .search-icon {
   position: absolute;
-  top: 12px;
-  left: 10px;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--gray);
+  width: 18px;
+  height: 18px;
 }
 
+/* Restaurant Grid */
 .restaurant-grid {
-  margin-top: 30px;
   display: grid;
   gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
 }
 
 .restaurant-card {
@@ -87,6 +121,8 @@ body {
   padding: 20px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
   transition: 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .restaurant-card:hover {
@@ -96,7 +132,8 @@ body {
 .card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  margin-bottom: 14px;
 }
 
 .card-header .left {
@@ -113,11 +150,14 @@ body {
 .card-header p {
   font-size: 0.9rem;
   color: var(--gray);
+  margin-top: 3px;
 }
 
 .badges {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .badge {
@@ -125,6 +165,7 @@ body {
   font-size: 0.8rem;
   border-radius: 20px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .badge.approved {
@@ -142,9 +183,19 @@ body {
   color: #991b1b;
 }
 
-.badge.blue {
-  background: #dbeafe;
-  color: #1d4ed8;
+.badge.score.green {
+  background: #d1fae5;
+  color: var(--green);
+}
+
+.badge.score.orange {
+  background: #fef3c7;
+  color: var(--orange);
+}
+
+.badge.score.red {
+  background: #fee2e2;
+  color: var(--red);
 }
 
 .card-content {
@@ -152,6 +203,7 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 20px;
+  flex-grow: 1;
 }
 
 .card-content p {
@@ -163,15 +215,47 @@ body {
   gap: 6px;
 }
 
+.card-footer {
+  margin-top: 20px;
+  text-align: right;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-edit {
+  background-color: var(--blue);
+  color: white;
+  border: none;
+}
+
+.btn-edit:hover {
+  background-color: #1d4ed8;
+}
+
 .empty-state {
   text-align: center;
-  padding: 40px 0;
+  padding: 40px 20px;
+  grid-column: 1 / -1;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 .empty-state .lucide-icon.big {
-  width: 64px;
-  height: 64px;
-  color: #ccc;
+  width: 48px;
+  height: 48px;
+  color: #d1d5db;
 }
 
 .empty-state h3 {
@@ -181,5 +265,21 @@ body {
 }
 
 .empty-state p {
+  color: var(--gray);
+  margin-top: 4px;
+}
+
+/* Icons */
+.lucide-icon {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+}
+
+.lucide-icon.blue {
+  color: var(--blue);
+}
+
+.lucide-icon.gray {
   color: var(--gray);
 }

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Restaurant – Inspector Hub</title>
+  <link rel="stylesheet" href="/css/editRestaurant.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<%- include('partials/header2') %>
+
+<div class="form-wrapper">
+  <div class="form-header">
+    <h1>Edit Restaurant</h1>
+    <p>Modify the details of the restaurant below.</p>
+  </div>
+
+  <form class="form-card" method="POST" action="/inspector/restaurants/edit/<%= restaurant.id %>">
+    <div class="form-group">
+      <label for="name">Restaurant Name</label>
+      <input type="text" id="name" name="name" value="<%= restaurant.name %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="license">License Number</label>
+      <input type="text" id="license" name="license_number" value="<%= restaurant.license_number %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="contact_person">Contact Person</label>
+      <input type="text" id="contact_person" name="contact_person" value="<%= restaurant.contact_person %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" value="<%= restaurant.email %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="phone">Phone</label>
+      <input type="text" id="phone" name="phone" value="<%= restaurant.phone %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="zone">Zone</label>
+      <input type="text" id="zone" name="zone" value="<%= restaurant.zone %>" required readonly>
+    </div>
+
+    <div class="form-group">
+      <label for="region">Region</label>
+      <input type="text" id="region" name="region" value="<%= restaurant.region %>" required readonly>
+    </div>
+
+    <div class="form-group">
+      <label for="address">Address</label>
+      <textarea id="address" name="address" rows="3" required><%= restaurant.address %></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="region">Status</label>
+      <input type="text" id="region" name="region" value="<%= restaurant.status %>" required readonly>
+    </div>
+
+    <div class="form-footer">
+      <button type="submit" class="btn btn-black">Update Restaurant</button>
+      <a href="/inspector/restaurants" class="btn btn-outline">← Back to List</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>

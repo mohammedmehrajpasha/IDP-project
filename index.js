@@ -36,7 +36,7 @@ app.use(userRoutes);
 // Routes
 app.get('/', (req, res) => res.render('home1'));
 
-app.get('/getGeoLocation', (req, res) => res.render('geoLocation'));
+
 
 app.get('/logout', (req, res) => {
   req.session.destroy(err => {
@@ -45,6 +45,7 @@ app.get('/logout', (req, res) => {
   });
 });
 
+app.get('/getGeoLocation', (req, res) => res.render('geoLocation'));
 app.locals.formatLabel = function(key) {
   return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
 };

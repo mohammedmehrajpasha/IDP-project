@@ -18,95 +18,153 @@
     <p>Schedule inspections for restaurants in your zone</p>
   </div>
 
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="pending">Schedule Inspection</button>
+    <button class="tab-btn" data-tab="scheduled">Scheduled Inspections (<%= scheduled.length %>)</button>
+  </div>
+
   <!-- Restaurants Needing Inspection -->
-  <div class="card">
-    <h2><i data-lucide="clock" class="icon"></i> Restaurants Requiring Inspection</h2>
-    <p class="subtitle">Sorted by last inspection date</p>
+  <div class="tab-content active" id="pending">
+    <div class="card">
+      <h2><i data-lucide="clock" class="icon"></i> Restaurants Requiring Inspection</h2>
+      <p class="subtitle">Sorted by last inspection date</p>
 
-    <table>
-      <thead>
-        <tr>
-          <th><i data-lucide="store" class="icon-sm"></i>Name</th>
-          <th><i data-lucide="file-badge" class="icon-sm"></i>License</th>
-          <th><i data-lucide="map-pin" class="icon-sm"></i>Region</th>
-          <th><i data-lucide="calendar-days" class="icon-sm"></i>Last Inspection</th>
-          <!-- <th><i data-lucide="alert-octagon" class="icon-sm"></i>Priority</th> -->
-          <th><i data-lucide="plus" class="icon-sm"></i>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% restaurants.forEach(r => { %>
+      <!-- Search Bar -->
+      <div class="search-bar">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" id="pendingSearch" placeholder="Search by name, license, region...">
+      </div>
+
+      <table>
+        <thead>
           <tr>
-            <td><%= r.name %></td>
-            <td><%= r.license_number %></td>
-            <td><%= r.region %></td>
-            <td><%= r.last_inspection_date ? new Date(r.last_inspection_date).toLocaleDateString() : 'Never' %></td>
-            <!-- <td>
-              <% if (r.priority) { %>
-                <span class="badge <%= r.priority.toLowerCase() %>"><%= r.priority %></span>
-              <% } else { %>
-                <span class="badge gray">Unknown</span>
-              <% } %>
-            </td> -->
-            <td>
-              <form action="/admin/inspections/schedule" method="POST" class="inline-form">
-                <input type="hidden" name="restaurant_id" value="<%= r.id %>">
-                <select name="inspector_id" required>
-                  <option value="">Inspector</option>
-                  <% inspectors.filter(ins => ins.region === r.region).forEach(ins => { %>
-                    <option value="<%= ins.id %>"><%= ins.name %> – <%= ins.region %></option>
-                  <% }) %>
-                </select>
-
-                </select>
-                <input type="date" name="inspection_date" min="<%= today %>" required>
-                <button type="submit" class="btn btn-black">
-                  <i data-lucide="calendar-plus" class="icon-sm"></i> Schedule
-                </button>
-              </form>
-            </td>
+            <th><i data-lucide="store" class="icon-sm"></i>Name</th>
+            <th><i data-lucide="file-badge" class="icon-sm"></i>License</th>
+            <th><i data-lucide="map-pin" class="icon-sm"></i>Region</th>
+            <th><i data-lucide="calendar-days" class="icon-sm"></i>Last Inspection</th>
+            <th><i data-lucide="alert-octagon" class="icon-sm"></i>Priority</th>
+            <th><i data-lucide="plus" class="icon-sm"></i>Action</th>
           </tr>
-        <% }) %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% restaurants.forEach(r => { %>
+            <tr data-name="<%= r.name.toLowerCase() %>" data-license="<%= r.license_number.toLowerCase() %>" data-region="<%= r.region.toLowerCase() %>">
+              <td><%= r.name %></td>
+              <td><%= r.license_number %></td>
+              <td><%= r.region %></td>
+              <td><%= r.last_inspection_date ? new Date(r.last_inspection_date).toLocaleDateString() : 'Never' %></td>
+              <td>
+                <span class="badge <%= r.priority.toLowerCase() %>"><%= r.priority %></span>
+              </td>
+              <td>
+                <form action="/admin/inspections/schedule" method="POST" class="inline-form">
+                  <input type="hidden" name="restaurant_id" value="<%= r.id %>">
+                  <select name="inspector_id" required>
+                    <option value="">Inspector</option>
+                    <% inspectors.filter(ins => ins.region === r.region).forEach(ins => { %>
+                      <option value="<%= ins.id %>"><%= ins.name %> – <%= ins.region %></option>
+                    <% }) %>
+                  </select>
+                  <input type="date" name="inspection_date" min="<%= today %>" required>
+                  <button type="submit" class="btn btn-black">
+                    <i data-lucide="calendar-plus" class="icon-sm"></i> Schedule
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- Scheduled Inspections -->
-  <div class="card">
-    <h2><i data-lucide="list-checks" class="icon"></i> Scheduled Inspections</h2>
-    <table>
-      <thead>
-        <tr>
-          <th><i data-lucide="store" class="icon-sm"></i> Restaurant</th>
-          <th><i data-lucide="user-check" class="icon-sm"></i> Inspector</th>
-          <th><i data-lucide="calendar-days" class="icon-sm"></i> Date</th>
-          <th><i data-lucide="activity" class="icon-sm"></i> Status</th>
-          <th><i data-lucide="plus" class="icon-sm"></i> Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% scheduled.forEach(i => { %>
+  <div class="tab-content" id="scheduled">
+    <div class="card">
+      <h2><i data-lucide="list-checks" class="icon"></i> Scheduled Inspections</h2>
+      
+      <!-- Search Bar -->
+      <div class="search-bar">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" id="scheduledSearch" placeholder="Search by restaurant, inspector...">
+      </div>
+
+      <table>
+        <thead>
           <tr>
-            <td><%= i.restaurant_name %></td>
-            <td><%= i.inspector_name %></td>
-            <td><%= new Date(i.scheduled_date).toLocaleDateString() %></td>
-            <td><span class="badge <%= i.status.toLowerCase().replace(' ', '-') %>"><%= i.status.replace('-', ' ') %></span></td>
-            <td>
-            <form action="/admin/inspections/delete/<%= i.id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this scheduled inspection?');" style="display:inline;">
-              <button type="submit" class="icon-btn delete" title="Delete">
-              <i data-lucide="trash-2"></i>
-                </button>
-              </form>
-            </td>
+            <th><i data-lucide="store" class="icon-sm"></i> Restaurant</th>
+            <th><i data-lucide="user-check" class="icon-sm"></i> Inspector</th>
+            <th><i data-lucide="calendar-days" class="icon-sm"></i> Date</th>
+            <th><i data-lucide="activity" class="icon-sm"></i> Status</th>
+            <th><i data-lucide="plus" class="icon-sm"></i> Action</th>
           </tr>
-        <% }) %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% scheduled.forEach(i => { %>
+            <tr data-restaurant="<%= i.restaurant_name.toLowerCase() %>" data-inspector="<%= i.inspector_name.toLowerCase() %>">
+              <td><%= i.restaurant_name %></td>
+              <td><%= i.inspector_name %></td>
+              <td><%= new Date(i.scheduled_date).toLocaleDateString() %></td>
+              <td><span class="badge <%= i.status.toLowerCase().replace(' ', '-') %>"><%= i.status.replace('-', ' ') %></span></td>
+              <td>
+                <form action="/admin/inspections/delete/<%= i.id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this scheduled inspection?');" style="display:inline;">
+                  <button type="submit" class="icon-btn delete" title="Delete">
+                    <i data-lucide="trash-2"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
   </div>
 
 </div>
 <script>
   lucide.createIcons();
+
+  // Tab Switching
+  const tabs = document.querySelectorAll('.tab-btn');
+  const contents = document.querySelectorAll('.tab-content');
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabs.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      contents.forEach(c => c.classList.remove('active'));
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Search Filter for Pending Inspections
+  document.getElementById('pendingSearch').addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#pending tbody tr');
+    
+    rows.forEach(row => {
+      const name = row.dataset.name || '';
+      const license = row.dataset.license || '';
+      const region = row.dataset.region || '';
+      
+      const match = name.includes(query) || license.includes(query) || region.includes(query);
+      row.style.display = match ? '' : 'none';
+    });
+  });
+
+  // Search Filter for Scheduled Inspections
+  document.getElementById('scheduledSearch').addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#scheduled tbody tr');
+    
+    rows.forEach(row => {
+      const restaurant = row.dataset.restaurant || '';
+      const inspector = row.dataset.inspector || '';
+      
+      const match = restaurant.includes(query) || inspector.includes(query);
+      row.style.display = match ? '' : 'none';
+    });
+  });
 </script>
 </body>
 </html>

@@ -21,9 +21,35 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-router.get('/inspectorLogin',(req,res)=>{
-    res.render('inspectorLogin');
-  })
+router.get('/inspectorLogin', (req, res) => {
+  const error = req.query.error || null;
+  res.render('inspectorLogin', { error });
+});
+
+router.post('/inspectorLogin', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.redirect('/inspectorLogin?error=Email and password are required');
+  }
+
+  try {
+    const [results] = await db.query("SELECT * FROM inspectors WHERE email = ?", [email]);
+
+    if (results.length === 0 || results[0].password !== password) {
+      return res.redirect('/inspectorLogin?error=Invalid credentials');
+    }
+
+    req.session.zone = results[0].zone;
+    req.session.inspectorName = results[0].name;
+    req.session.region = results[0].region;
+    req.session.ID = results[0].id;
+    res.redirect('/inspector/dashboard?success=1');
+  } catch (err) {
+    console.error("Database error:", err);
+    res.redirect('/inspectorLogin?error=Internal server error');
+  }
+});
 
 router.post('/inspectorLogin', async (req, res) => {
   const { email, password } = req.body;
@@ -174,18 +200,24 @@ router.post('/inspector/restaurants/add', async (req, res) => {
 router.get('/inspector/restaurants', async (req, res) => {
   const zone = req.session.zone;
   const region = req.session.region;
-  const inspectorName = req.session.inspectorName || "Inspector";
 
   try {
-    const [restaurants] = await db.query(`
-      SELECT id, name, contact_person, license_number, email, phone, zone, region, address, status, hygiene_score, created_at, last_inspection_date
+    const [allRestaurants] = await db.query(`
+      SELECT id, name, contact_person, license_number, email, phone, zone, region, 
+             address, status, hygiene_score, created_at, last_inspection_date
       FROM restaurants
-      WHERE zone = ? AND region = ? AND status = 'approved'
+      WHERE zone = ? AND region = ?
     `, [zone, region]);
 
+    // Categorize restaurants
+    const approved = allRestaurants.filter(r => r.status === 'approved');
+    const pending = allRestaurants.filter(r => r.status === 'pending');
+    const rejected = allRestaurants.filter(r => r.status === 'rejected');
+
     res.render('viewRestaurants', {
-      restaurants,
-      inspectorName,
+      approved,
+      pending,
+      rejected,
       zone,
       region
     });
@@ -193,6 +225,25 @@ router.get('/inspector/restaurants', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).render('error', { message: "Error fetching restaurants." });
+  }
+});
+
+router.get('/inspector/restaurants/edit/:id', async (req, res) => {
+  try {
+    const [restaurant] = await db.query('SELECT * FROM restaurants WHERE id = ?', [req.params.id]);
+    
+    if (!restaurant) {
+      return res.status(404).render('error', { message: "Restaurant not found." });
+    }
+
+    res.render('editRestaurantInspector', {
+      restaurant: restaurant[0],
+      zone: req.session.zone,
+      region: req.session.region
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).render('error', { message: "Error loading restaurant details." });
   }
 });
 
