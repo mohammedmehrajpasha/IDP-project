@@ -24,6 +24,12 @@
     <button class="tab-btn" data-tab="deleted">Rejected (<%= deletedRestaurants.length %>)</button>
   </div>
 
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <i data-lucide="search" class="search-icon"></i>
+    <input type="text" id="restaurantSearch" placeholder="Search by name, license, contact, region...">
+  </div>
+
   <!-- Pending -->
   <div class="tab-content active" id="pending">
     <div class="card">
@@ -42,7 +48,7 @@
         </thead>
         <tbody>
           <% pendingRestaurants.forEach(r => { %>
-            <tr>
+            <tr data-name="<%= r.name.toLowerCase() %>" data-license="<%= r.license_number.toLowerCase() %>" data-contact="<%= r.contact_person.toLowerCase() %>" data-region="<%= r.region.toLowerCase() %>">
               <td><%= r.name %></td>
               <td><%= r.license_number %></td>
               <td><%= r.contact_person %></td>
@@ -83,7 +89,7 @@
         </thead>
         <tbody>
           <% approvedRestaurants.forEach(r => { %>
-            <tr>
+            <tr data-name="<%= r.name.toLowerCase() %>" data-license="<%= r.license_number.toLowerCase() %>" data-contact="<%= r.contact_person.toLowerCase() %>" data-region="<%= r.region.toLowerCase() %>">
               <td><%= r.name %></td>
               <td><%= r.license_number %></td>
               <td><%= r.contact_person %></td>
@@ -124,7 +130,7 @@
           </thead>
           <tbody>
             <% deletedRestaurants.forEach(r => { %>
-              <tr>
+              <tr data-name="<%= r.name.toLowerCase() %>" data-license="<%= r.license_number.toLowerCase() %>" data-contact="<%= r.contact_person.toLowerCase() %>" data-region="<%= r.region.toLowerCase() %>">
                 <td><%= r.name %></td>
                 <td><%= r.license_number %></td>
                 <td><%= r.contact_person %></td>
@@ -144,7 +150,6 @@
       <% } %>
     </div>
   </div>
-
 </div>
 
 <script>
@@ -159,6 +164,23 @@
       btn.classList.add('active');
       contents.forEach(c => c.classList.remove('active'));
       document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Search Filter
+  const searchInput = document.getElementById('restaurantSearch');
+  searchInput.addEventListener('input', function () {
+    const query = this.value.toLowerCase();
+    const allRows = document.querySelectorAll('tbody tr');
+
+    allRows.forEach(row => {
+      const name = row.dataset.name || '';
+      const license = row.dataset.license || '';
+      const contact = row.dataset.contact || '';
+      const region = row.dataset.region || '';
+
+      const match = name.includes(query) || license.includes(query) || contact.includes(query) || region.includes(query);
+      row.style.display = match ? '' : 'none';
     });
   });
 </script>

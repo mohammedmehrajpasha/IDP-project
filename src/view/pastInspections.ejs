@@ -14,8 +14,13 @@
 
   <!-- Header -->
   <div class="dashboard-header">
-    <h1>Past Inspections</h1>
-    <p>View completed inspection reports from your zone</p>
+    <div>
+      <h1>Past Inspections</h1>
+      <p>View completed inspection reports from your zone</p>
+    </div>
+    <div class="stats">
+      <span><i data-lucide="file-text"></i> Total: <%= pendingReports.length + approvedReports.length + rejectedReports.length %></span>
+    </div>
   </div>
 
   <!-- Tabs -->
@@ -23,6 +28,12 @@
     <button class="tab-btn active" data-tab="pending">Pending (<%= pendingReports.length %>)</button>
     <button class="tab-btn" data-tab="approved">Approved (<%= approvedReports.length %>)</button>
     <button class="tab-btn" data-tab="rejected">Rejected (<%= rejectedReports.length %>)</button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <i data-lucide="search" class="search-icon"></i>
+    <input type="text" id="searchInput" placeholder="Search by restaurant name or license number...">
   </div>
 
   <% function getScoreClass(score) {
@@ -42,7 +53,9 @@
       <% } else { %>
         <div class="reports-grid">
           <% list.forEach(r => { %>
-            <div class="report-card">
+            <div class="report-card" 
+                 data-restaurant="<%= r.restaurant_name.toLowerCase() %>"
+                 data-license="<%= r.license_number.toLowerCase() %>">
               <div class="report-header">
                 <div>
                   <h3><%= r.restaurant_name %></h3>
@@ -73,6 +86,8 @@
 
 <script>
   lucide.createIcons();
+  
+  // Tab Switching
   const tabs = document.querySelectorAll('.tab-btn');
   const contents = document.querySelectorAll('.tab-content');
   tabs.forEach(btn => {
@@ -81,6 +96,22 @@
       btn.classList.add('active');
       contents.forEach(c => c.classList.remove('active'));
       document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Search Functionality
+  const searchInput = document.getElementById('searchInput');
+  searchInput.addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    const activeTab = document.querySelector('.tab-content.active').id;
+    const cards = document.querySelectorAll(`#${activeTab} .report-card`);
+    
+    cards.forEach(card => {
+      const restaurant = card.dataset.restaurant || '';
+      const license = card.dataset.license || '';
+      
+      const match = restaurant.includes(query) || license.includes(query);
+      card.style.display = match ? '' : 'none';
     });
   });
 </script>

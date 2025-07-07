@@ -4,6 +4,7 @@
   --border: #e5e7eb;
   --bg-light: #f9fafb;
   --white: #fff;
+  --readonly-bg: #f3f4f6; /* New color for readonly fields */
 }
 
 /* Base */
@@ -76,6 +77,18 @@ body {
 .form-group select:focus {
   border-color: var(--black);
   outline: none;
+}
+
+/* Readonly Fields */
+.form-group input[readonly] {
+  background-color: var(--readonly-bg);
+  color: var(--gray);
+  cursor: not-allowed;
+  border-color: var(--border);
+}
+
+.form-group input[readonly]::placeholder {
+  color: #9ca3af;
 }
 
 /* Buttons */

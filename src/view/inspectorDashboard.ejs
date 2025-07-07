@@ -131,5 +131,25 @@
 <script>
   lucide.createIcons();
 </script>
+<!-- Add this at the bottom of your inspector dashboard template -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  // Show success message if redirected from login
+  const urlParams = new URLSearchParams(window.location.search);
+  const success = urlParams.get('success');
+
+  if (success) {
+    Swal.fire({
+      icon: 'success',
+      title: 'Login Successful',
+      text: 'Welcome back!',
+      timer: 2000,
+      showConfirmButton: false
+    }).then(() => {
+      // Clean URL after showing message
+      window.history.replaceState({}, document.title, window.location.pathname);
+    });
+  }
+</script>
 </body>
 </html>

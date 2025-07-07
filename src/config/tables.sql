@@ -1,15 +1,6 @@
 create database fssai;
 use fssai;
 
-CREATE TABLE users (
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL PRIMARY KEY,
-    phone VARCHAR(15),
-    password VARCHAR(255) NOT NULL,
-    assigned_region VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE inspectors (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100),
