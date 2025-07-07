@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/dbConnect');
+const upload = require('../config/multer');
+const fs = require('fs');
 
 const { checklistSchema, sectionLabels } = require('../data/inspectionCategories');
 
@@ -178,13 +180,15 @@ router.get('/user/favorites', async (req, res) => {
 
 router.get('/user/complaints', async (req, res) => {
   try {
-    const userId = req.session.email; // Make sure session contains userId
+    const userId = req.session.email;
 
-    // Fetch all restaurants (for dropdown)
-    const [restaurants] = await db.query("SELECT id, name, zone FROM restaurants WHERE status = 'approved'");
+    // Fetch all restaurants (optional for dropdown etc.)
+    const [restaurants] = await db.query(
+      "SELECT id, name, zone FROM restaurants WHERE status = 'approved'"
+    );
 
-    // Fetch user's complaints
-    const [complaints] = await db.query(`
+    // Fetch user's complaints with restaurant name
+    const [complaintsRaw] = await db.query(`
       SELECT c.*, r.name AS restaurant_name 
       FROM complaints c
       JOIN restaurants r ON c.restaurant_id = r.id
@@ -192,26 +196,73 @@ router.get('/user/complaints', async (req, res) => {
       ORDER BY c.created_at DESC
     `, [userId]);
 
-    res.render('userViews/complaints', { complaints, restaurants });
+    // ✅ Parse the 'images' field (stored as JSON string in DB)
+    const complaints = complaintsRaw.map(c => ({
+      ...c,
+      images: c.images ? JSON.parse(c.images) : []  // safely parse
+    }));
 
+    res.render('userViews/complaints', { complaints, restaurants });
   } catch (err) {
     console.error("Error fetching complaints:", err);
     res.status(500).send("Server error");
   }
 });
 
-// Submit Complaint
-router.post('/user/complaints', async (req, res) => {
-  const { restaurantId, subject, message, isAnonymous } = req.body;
-  const userId = req.session.email;
 
-  await db.query(`
-    INSERT INTO complaints (user_id, restaurant_id, subject, message, status, created_at, is_anonymous)
-    VALUES (?, ?, ?, ?, 'pending', NOW(), ?)
-  `, [userId, restaurantId, subject, message, isAnonymous ? 1 : 0]);
 
-  res.redirect('/user/complaints');
+router.get('/user/complaint/:id', async (req, res) => {
+  try {
+    const userId = req.session.email;
+    const restaurantId = req.params.id;
+
+    const [[restaurant]] = await db.query('SELECT * FROM restaurants WHERE id = ?', [restaurantId]);
+    if (!restaurant) return res.status(404).render('error', { message: 'Restaurant not found.' });
+
+    res.render('userViews/fileComplaint', { restaurantId, restaurant });
+
+  } catch (err) {
+    console.error("Error fetching restaurant for complaint:", err);
+    res.status(500).send("Server error");
+  }
 });
+
+
+
+
+
+
+
+router.post('/user/complaint/:id', upload.array('images', 5), async (req, res) => {
+  try {
+    const restaurantId = req.params.id;
+    const { subject, description, anonymous } = req.body;
+    const userId = req.session.email;
+
+    const imagePaths = req.files.map(file => file.filename); // store filenames only
+
+    await db.query(
+      `INSERT INTO complaints 
+      (user_id, restaurant_id, subject, message, is_anonymous, images) 
+      VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        userId,
+        restaurantId,
+        subject,
+        description,                 // ✅ saved as `message` in table
+        anonymous ? 1 : 0,          // ✅ matches `is_anonymous`
+        JSON.stringify(imagePaths)  // ✅ saves array as string
+      ]
+    );
+
+    res.redirect('/user/complaints');
+  } catch (err) {
+    console.error('Error filing complaint:', err);
+    res.status(500).send('Error filing complaint.');
+  }
+});
+
+
 
 // GET /user/restaurant/:id
 router.get('/user/restaurant/:id', async (req, res) => {

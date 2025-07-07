@@ -227,3 +227,6 @@ CREATE TABLE complaints (
   FOREIGN KEY (user_id) REFERENCES users(email) ON DELETE CASCADE,
   FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
 );
+
+
+ALTER TABLE complaints ADD COLUMN images TEXT;

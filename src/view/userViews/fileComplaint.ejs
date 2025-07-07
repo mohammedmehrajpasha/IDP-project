@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>File Complaint</title>
+  <link rel="stylesheet" href="/css/fileComplaint.css">
+</head>
+<body>
+  <%- include('../partials/header3') %>
+
+  <div class="complaint-container">
+    <div class="form-wrapper">
+      <h2>📣 File a Complaint</h2>
+      <p class="restaurant-name">Against Restaurant: <strong><%= restaurant.name %></strong></p>
+
+      <form action="/user/complaint/<%= restaurantId %>" method="POST" enctype="multipart/form-data" class="complaint-form">
+        <label for="subject">Complaint Subject:</label>
+        <input type="text" id="subject" name="subject" placeholder="E.g., Unhygienic kitchen practices" required>
+
+        <label for="description">Complaint Description:</label>
+        <textarea id="description" name="description" rows="6" placeholder="Describe the issue clearly with details..." required></textarea>
+
+        <label for="images">Upload Images (optional):</label>
+        <input type="file" id="images" name="images" accept="image/*" multiple>
+
+        <label class="anonymous-check">
+          <input type="checkbox" name="anonymous"> Submit anonymously
+        </label>
+
+        <div class="guidelines">
+          <h4>📝 Complaint Guidelines</h4>
+          <ul>
+            <li>✅ Be clear, specific, and factual</li>
+            <li>🕒 Mention dates, times, and observations</li>
+            <li>🚫 Avoid offensive or abusive language</li>
+            <li>⏱️ Complaints are reviewed within 2–3 working days</li>
+          </ul>
+        </div>
+
+        <button type="submit" class="submit-btn">Submit Complaint</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

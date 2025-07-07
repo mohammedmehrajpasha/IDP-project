@@ -1,149 +1,130 @@
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #f7f9fc;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .complaints-container {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 20px;
-  }
-  
-  .complaints-wrapper {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  }
-  
-  h1 {
-    margin-bottom: 10px;
-    font-size: 28px;
-    color: #003366;
-  }
-  
-  .subtitle {
-    font-size: 16px;
-    margin-bottom: 30px;
-    color: #555;
-  }
-  
-  .tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 25px;
-  }
-  
-  .tab-button {
-    padding: 10px 18px;
-    border: none;
-    background-color: #e0e0e0;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.2s;
-  }
-  
-  .tab-button.active {
-    background-color: #007bff;
-    color: white;
-  }
-  
-  form label {
-    display: block;
-    margin-top: 20px;
-    margin-bottom: 5px;
-    font-weight: 600;
-  }
-  
-  select,
-  input[type="text"],
-  textarea {
-    width: 100%;
-    padding: 10px;
-    font-size: 15px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-  }
-  
-  .checkbox-group {
-    margin-top: 15px;
-  }
-  
-  .checkbox-group input {
-    margin-right: 8px;
-  }
-  
-  .guidelines {
-    margin-top: 25px;
-    background: #f0f8ff;
-    padding: 15px;
-    border-left: 4px solid #007bff;
-    border-radius: 6px;
-  }
-  
-  .guidelines ul {
-    margin: 0;
-    padding-left: 20px;
-  }
-  
-  .submit-btn {
-    margin-top: 25px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  
-  .submit-btn:disabled {
-    background-color: #999;
-    cursor: not-allowed;
-  }
-  
-  .empty-msg {
-    font-style: italic;
-    color: #777;
-  }
-  
-  .complaint-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    background-color: #fcfcfc;
-  }
-  
-  .complaint-card h3 {
-    margin-top: 0;
-  }
-  
-  .status-label {
-    font-weight: bold;
-    text-transform: capitalize;
-  }
-  
-  .status-label.pending {
-    color: orange;
-  }
-  
-  .status-label.resolved {
-    color: green;
-  }
-  
-  .anonymous-label {
-    font-style: italic;
-    color: #888;
-    margin-left: 10px;
-  }
-  
-  .resolution-msg {
-    margin-top: 10px;
-    color: green;
-    font-weight: 600;
-  }
-  
+
+
+h1 {
+  margin-top: 0;
+  font-size: 26px;
+  color: #333;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 25px;
+}
+
+.empty-msg {
+  font-size: 16px;
+  color: #999;
+}
+
+.complaint-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #fafafa;
+}
+
+.complaint-card h3 {
+  margin: 0 0 10px;
+  color: #222;
+}
+
+.complaint-card p {
+  margin: 5px 0;
+  color: #444;
+  font-size: 14px;
+}
+
+.anonymous-label {
+  background: #ffc107;
+  color: #000;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+.status-label {
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+.status-label.pending {
+  background-color: #ffeb3b;
+  color: #333;
+}
+
+.status-label.resolved {
+  background-color: #4caf50;
+  color: white;
+}
+
+.resolution-msg {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: #e0f7e9;
+  color: #2e7d32;
+  border-left: 4px solid #4caf50;
+  border-radius: 4px;
+}
+
+.images-preview {
+  margin-top: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.images-preview img {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.complaints-wrapper h1 {
+/* specific to complaints only */
+font-size: 26px;
+color: #333;
+margin-top: 0;
+}
+
+.complaints-wrapper .subtitle {
+color: #666;
+font-size: 14px;
+margin-bottom: 25px;
+}
+
+.complaints-wrapper .container {
+background: #fff;
+padding: 30px;
+border-radius: 12px;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.complaints-wrapper .complaint-card h3 {
+margin: 0 0 10px;
+color: #222;
+}
+
+.complaints-box {
+background: #fff;
+padding: 30px;
+border-radius: 12px;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.complaints-heading {
+font-size: 26px;
+color: #333;
+}
+
+.complaints-subtitle {
+font-size: 14px;
+color: #666;
+}
