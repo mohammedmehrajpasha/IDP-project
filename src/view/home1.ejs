@@ -1,62 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>FSSAI Inspector Hub – Food Hygiene Inspection & Reporting</title>
-    <link rel="stylesheet" href="/css/home1.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Food Hygiene Inspection Hub</title>
+  <link rel="stylesheet" href="/css/home1.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="logo">FSSAI <span>Inspector Hub</span></div>
-            <div class="hamburger">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
-        </div>
-    </nav>
+<!-- Navigation -->
+<nav class="navbar">
+  <div class="container nav-wrapper">
+    <div class="logo">Food Hygiene Inspection Hub</div>
+    <div class="nav-links">
+      <a href="#login">Login</a>
+      <a href="#login">About</a>
+      <a href="#login">Contact</a>
+    </div>
+  </div>
+</nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <h1>Ensuring Safe & Hygienic Dining Across Restaurants</h1>
-            <p>Transparent inspections, AI-powered reporting, and public hygiene ratings for informed food choices.</p>
-        </div>
-    </section>
+<!-- Hero -->
+<section class="hero">
+  <div class="container center">
+    <h1>Ensuring Safer Dining Experiences</h1>
+    <p>Real-time inspections, public transparency, and hygiene-driven accountability for restaurants.</p>
+    <a href="#login" class="btn btn-primary">Explore Login Options</a>
+  </div>
+</section>
 
-    <!-- Login Section -->
-    <section class="features">
-        <div class="container">
-            <div class="features-heading">
-                <h2>Login Portals</h2>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <h3>General Users</h3>
-                    <p>Search and view hygiene inspection results for registered restaurants.</p>
-                    <a href="/userLogin" class="btn btn-outline">User Login</a>
-                </div>
-                <div class="feature-card">
-                    <h3>FSSAI Inspectors</h3>
-                    <p>Log inspections, upload reports, and monitor hygiene violations.</p>
-                    <a href="/inspectorLogin" class="btn btn-outline">Inspector Login</a>
-                </div>
-                <div class="feature-card">
-                    <h3>Admin Panel</h3>
-                    <p>Manage inspectors, validate reports, and oversee system-wide analytics.</p>
-                    <a href="/adminLogin" class="btn btn-outline">Admin Login</a>
-                </div>
-            </div>
-        </div>
-    </section>
+<!-- Login Portals -->
+<section id="login" class="login-section">
+  <div class="container">
+    <h2 class="section-heading">Login Portals</h2>
+    <div class="login-cards">
+      <div class="card">
+        <h3>General Users</h3>
+        <p>View hygiene reports & ratings of registered restaurants in your area.</p>
+        <a href="/userLogin" class="btn btn-outline">User Login</a>
+      </div>
+      <div class="card">
+        <h3>Inspectors</h3>
+        <p>Submit inspection reports, upload evidence & assign scores.</p>
+        <a href="/inspectorLogin" class="btn btn-outline">Inspector Login</a>
+      </div>
+      <div class="card">
+        <h3>Admin</h3>
+        <p>Manage restaurants, inspectors, reports & approval workflows.</p>
+        <a href="/adminLogin" class="btn btn-outline">Admin Login</a>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <!-- Footer -->
-    <%- include('partials/footer') %>
+<!-- About -->
+<section id="about" class="about-section">
+  <div class="container center">
+    <h2 class="section-heading">About the Platform</h2>
+    <p>This platform helps uphold public health by providing a transparent and tech-enabled system for food hygiene inspection, reporting, and accountability. It is built under the direction of FSSAI regulations to assist regulatory bodies, restaurants, and the public alike.</p>
+  </div>
+</section>
 
-    <script src="/js/home.js"></script>
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <p>&copy; <%= new Date().getFullYear() %> Food Hygiene Inspection Hub. All Rights Reserved.</p>
+  </div>
+</footer>
+
+<script>
+  lucide.createIcons();
+</script>
 </body>
 </html>

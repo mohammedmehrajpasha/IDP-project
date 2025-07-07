@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../config/dbConnect');
 
 const { checklistSchema, sectionLabels } = require('../data/inspectionCategories');
+const PDFService = require('../services/pdfService');
 
 router.get('/adminLogin', (req, res) => {
   // Pass empty error variable if none exists
@@ -219,30 +220,100 @@ router.get('/admin/reports', async (req, res) => {
 
 router.get('/admin/reports/:id', async (req, res) => {
   const reportId = req.params.id;
-  if (!req.session.adminName || !req.session.zone) {
-  return res.redirect('/adminLogin');
-}
 
   try {
     const [[report]] = await db.query(`
-      SELECT ir.*, r.name AS restaurant_name, r.license_number, r.phone, r.email, r.address,
-             i.name AS inspector_name
-      FROM inspection_reports ir
-      JOIN restaurants r ON ir.restaurant_id = r.id
-      JOIN inspectors i ON ir.inspector_id = i.id
-      WHERE ir.id = ?
-    `, [reportId]);
+  SELECT ir.*, r.name AS restaurant_name, r.license_number, r.phone, r.email, r.address,
+         r.zone AS restaurant_zone, r.region AS restaurant_region,
+         i.name AS inspector_name,
+         a.name AS admin_name
+  FROM inspection_reports ir
+  JOIN restaurants r ON ir.restaurant_id = r.id
+  JOIN inspectors i ON ir.inspector_id = i.id
+  LEFT JOIN admins a ON ir.approved_by = a.id
+  WHERE ir.id = ?
+`, [reportId]);
+
+
+    if (!report) {
+      return res.status(404).render('error', { message: 'Report not found' });
+    }
+
+    // Parse JSON
+    const reportData = typeof report.report_json === 'string' ? JSON.parse(report.report_json) : report.report_json;
+    let imageUrls = [];
+
+    if (Array.isArray(report.image_paths)) {
+      imageUrls = report.image_paths;
+    } else if (typeof report.image_paths === 'string') {
+      try {
+        imageUrls = JSON.parse(report.image_paths);
+      } catch (err) {
+        console.error('Failed to parse image paths', err.message);
+      }
+    }
+
+    const hygieneScore = report.hygiene_score;
+    const scoreColor = hygieneScore >= 4 ? 'green' : hygieneScore >= 3 ? 'orange' : 'red';
+
+    res.render('adminViewReport', {
+      report: {
+        ...report,
+        report_data: reportData,
+        image_urls: imageUrls
+      },
+      restaurant: {
+        name: report.restaurant_name,
+        license_number: report.license_number,
+        phone: report.phone,
+        email: report.email,
+        address: report.address,
+        region: report.restaurant_region,
+        zone: report.restaurant_zone
+      },
+      inspector: {
+        name: report.inspector_name
+      },
+      adminName: report.admin_name,
+      checklistSchema,
+      sectionLabels,
+      hygieneScore,
+      scoreColor
+    });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).render('error', { message: 'Server Error' });
+  }
+});
+
+
+
+router.get('/admin/reports/:id/pdf', async (req, res) => {
+  const reportId = req.params.id;
+
+  try {
+    const [[report]] = await db.query(`
+  SELECT ir.*, r.name AS restaurant_name, r.license_number, r.phone, r.email, r.address,
+         r.zone AS restaurant_zone, r.region AS restaurant_region,
+         i.name AS inspector_name,
+         a.name AS admin_name
+  FROM inspection_reports ir
+  JOIN restaurants r ON ir.restaurant_id = r.id
+  JOIN inspectors i ON ir.inspector_id = i.id
+  LEFT JOIN admins a ON ir.approved_by = a.id
+  WHERE ir.id = ?
+`, [reportId]);
+
 
     if (!report) return res.status(404).render('error', { message: 'Report not found' });
 
-    const hygieneScore = parseFloat(report.hygiene_score);
-    const scoreColor = hygieneScore >= 4 ? 'green' : hygieneScore >= 3 ? 'orange' : 'red';
-
+    // Parse JSON fields
     let reportData = {};
     try {
       reportData = typeof report.report_json === 'string' ? JSON.parse(report.report_json) : report.report_json;
-    } catch (err) {
-      console.error('Failed to parse report_json:', err);
+    } catch (e) {
+      console.error('Failed to parse report_json:', e);
       reportData = {};
     }
 
@@ -253,38 +324,48 @@ router.get('/admin/reports/:id', async (req, res) => {
       try {
         imageUrls = JSON.parse(report.image_paths);
       } catch (err) {
-        console.error('❌ Failed to parse image_paths:', err.message);
-        imageUrls = [];
+        console.error('Failed to parse image_paths:', err.message);
       }
     }
 
-    res.render('adminViewReport', {
-      report: {
-        ...report,
-        hygiene_score: hygieneScore,
-        report_data: reportData,
-        image_urls: imageUrls
-      },
-      restaurant: {
-        name: report.restaurant_name,
-        license_number: report.license_number,
-        phone: report.phone,
-        email: report.email,
-        address: report.address
-      },
-      inspector: {
-        name: report.inspector_name
-      },
-      scoreColor,
-      checklistSchema,
-      sectionLabels
-    });
-
-  } catch (err) {
-    console.error('Failed to load admin report:', err);
-    res.status(500).render('error', { message: 'Internal server error' });
+    const pdfBuffer = await PDFService.generateInspectionReportPDF({
+  report: {
+    ...report,
+    report_data: reportData,
+    image_urls: imageUrls
+  },
+  restaurant: {
+    name: report.restaurant_name,
+    license_number: report.license_number,
+    phone: report.phone,
+    email: report.email,
+    address: report.address,
+    zone: report.restaurant_zone,
+    region: report.restaurant_region
+  },
+  inspector: {
+    name: report.inspector_name
+  },
+  admin: {
+    name: report.admin_name || null
   }
 });
+
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=FSSAI-Report-${reportId}.pdf`,
+      'Content-Length': pdfBuffer.length
+    });
+    res.send(pdfBuffer);
+
+  } catch (err) {
+    console.error('Failed to generate PDF:', err);
+    res.status(500).render('error', { message: 'Failed to generate PDF report' });
+  }
+});
+
+
 
 router.get('/admin/inspections/schedule', async (req, res) => {
   const zone = req.session.zone;
@@ -363,6 +444,7 @@ router.post('/adminLogin', async (req, res) => {
 
     req.session.zone = results[0].zone;
     req.session.adminName = results[0].name;
+    req.session.adminId=results[0].id;
     res.redirect('/admin/dashboard?success=1'); // This is correct
   } catch (err) {
     console.error("Database error:", err);
@@ -537,7 +619,7 @@ router.get('/admin/restaurants/view', async (req, res) => {
 
 router.post('/admin/reports/approve/:id', async (req, res) => {
   const reportId = req.params.id;
-
+  const adminId = req.session.adminId;
   if (!req.session.adminName || !req.session.zone) {
   return res.redirect('/adminLogin');
 }
@@ -555,7 +637,12 @@ router.post('/admin/reports/approve/:id', async (req, res) => {
     }
 
     // Update inspection_reports status
-    await db.query(`UPDATE inspection_reports SET status = 'approved' WHERE id = ?`, [reportId]);
+    await db.query(`
+  UPDATE inspection_reports 
+  SET status = 'approved', approved_by = ? 
+  WHERE id = ?
+`, [adminId, reportId]);
+
 
     // Update restaurants table with new score & date
     await db.query(`

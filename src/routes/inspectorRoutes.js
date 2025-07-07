@@ -7,18 +7,11 @@ const qs = require('qs');
 const db = require('../config/dbConnect');
 
 const { checklistSchema, sectionLabels } = require('../data/inspectionCategories');
-
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'D:/images');
-    },
-    filename: function (req, file, cb) {
-      const unique = Date.now() + '-' + file.originalname;
-      cb(null, unique);
-    }
-  }),
-  limits: { fileSize: 10 * 1024 * 1024 }
+const PDFService = require('../services/pdfService');
+const { storage } = require('../config/cloudinary');
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
 router.get('/inspectorLogin', (req, res) => {
@@ -319,9 +312,10 @@ router.post('/inspection/submit/:id', upload.array('images'), async (req, res) =
   const inspectorId = req.session.ID;
   const restaurantId = req.session.restaurant_id;
 
-  const images = req.files.map(f => f.filename);
+  // Get Cloudinary image URLs instead of local paths
+  const images = req.files.map(file => file.path); // file.path contains Cloudinary URL
 
-  // ✅ Calculate hygiene score
+  // Calculate hygiene score (your existing code)
   let totalChecked = 0;
   let totalItems = 0;
 
@@ -334,7 +328,6 @@ router.post('/inspection/submit/:id', upload.array('images'), async (req, res) =
     }
   }
 
-  // Total possible items: 20
   const hygieneScore = parseFloat(((totalChecked / 20) * 5).toFixed(2));
 
   try {
@@ -357,7 +350,7 @@ router.post('/inspection/submit/:id', upload.array('images'), async (req, res) =
       restaurantId,
       JSON.stringify(checklist),
       notes,
-      JSON.stringify(images),
+      JSON.stringify(images), // Now stores Cloudinary URLs
       latitude || null,
       longitude || null,
       hygieneScore
@@ -408,50 +401,48 @@ router.get('/inspector/pastInspections', async (req, res) => {
 });
 
 
+// Route: /inspector/view-report/:id
 router.get('/inspector/view-report/:id', async (req, res) => {
   const reportId = req.params.id;
-  const inspectorName = req.session.inspectorName;
 
   try {
     const [[report]] = await db.query(`
-      SELECT ir.*, r.name AS restaurant_name, r.license_number, r.phone, r.email, r.address,
-             i.name AS inspector_name
-      FROM inspection_reports ir
-      JOIN restaurants r ON ir.restaurant_id = r.id
-      JOIN inspectors i ON ir.inspector_id = i.id
-      WHERE ir.id = ?
-    `, [reportId]);
+  SELECT ir.*, r.name AS restaurant_name, r.license_number, r.phone, r.email, r.address,
+         r.zone AS restaurant_zone, r.region AS restaurant_region,
+         i.name AS inspector_name,
+         a.name AS admin_name
+  FROM inspection_reports ir
+  JOIN restaurants r ON ir.restaurant_id = r.id
+  JOIN inspectors i ON ir.inspector_id = i.id
+  LEFT JOIN admins a ON ir.approved_by = a.id
+  WHERE ir.id = ?
+`, [reportId]);
 
-    if (!report) return res.status(404).render('error', { message: 'Report not found' });
 
-    const hygieneScore = parseFloat(report.hygiene_score);
-    const scoreColor = hygieneScore >= 4 ? 'green' : hygieneScore >= 3 ? 'orange' : 'red';
-
-    let reportData = {};
-    try {
-      reportData = typeof report.report_json === 'string' ? JSON.parse(report.report_json) : report.report_json;
-    } catch (err) {
-      console.error('Failed to parse report_json:', err);
-      reportData = {};
+    if (!report) {
+      return res.status(404).render('error', { message: 'Report not found' });
     }
 
+    // Parse JSON
+    const reportData = typeof report.report_json === 'string' ? JSON.parse(report.report_json) : report.report_json;
     let imageUrls = [];
 
     if (Array.isArray(report.image_paths)) {
-      imageUrls = report.image_paths; // ✅ Already a JS array
+      imageUrls = report.image_paths;
     } else if (typeof report.image_paths === 'string') {
-    try {
-      imageUrls = JSON.parse(report.image_paths);
-    } catch (err) {
-      console.error('❌ Failed to parse image_paths:', err.message);
-    }
+      try {
+        imageUrls = JSON.parse(report.image_paths);
+      } catch (err) {
+        console.error('Failed to parse image paths', err.message);
+      }
     }
 
+    const hygieneScore = report.hygiene_score;
+    const scoreColor = hygieneScore >= 4 ? 'green' : hygieneScore >= 3 ? 'orange' : 'red';
 
     res.render('viewReport', {
       report: {
         ...report,
-        hygiene_score: hygieneScore,
         report_data: reportData,
         image_urls: imageUrls
       },
@@ -460,23 +451,102 @@ router.get('/inspector/view-report/:id', async (req, res) => {
         license_number: report.license_number,
         phone: report.phone,
         email: report.email,
-        address: report.address
+        address: report.address,
+        region: report.restaurant_region,
+        zone: report.restaurant_zone
       },
       inspector: {
-        name: report.inspector_name || inspectorName
+        name: report.inspector_name
       },
-      scoreColor,
+      adminName: report.admin_name,
       checklistSchema,
-      sectionLabels
+      sectionLabels,
+      hygieneScore,
+      scoreColor
     });
 
   } catch (err) {
-    console.error('Failed to load report:', err);
-    res.status(500).render('error', { message: 'Internal server error' });
+    console.error(err.message);
+    res.status(500).render('error', { message: 'Server Error' });
   }
 });
 
 
+router.get('/inspector/view-report/:id/pdf', async (req, res) => {
+  const reportId = req.params.id;
+
+  try {
+    const [[report]] = await db.query(`
+  SELECT ir.*, r.name AS restaurant_name, r.license_number, r.phone, r.email, r.address,
+         r.zone AS restaurant_zone, r.region AS restaurant_region,
+         i.name AS inspector_name,
+         a.name AS admin_name
+  FROM inspection_reports ir
+  JOIN restaurants r ON ir.restaurant_id = r.id
+  JOIN inspectors i ON ir.inspector_id = i.id
+  LEFT JOIN admins a ON ir.approved_by = a.id
+  WHERE ir.id = ?
+`, [reportId]);
+
+
+    if (!report) return res.status(404).render('error', { message: 'Report not found' });
+
+    // Parse JSON fields
+    let reportData = {};
+    try {
+      reportData = typeof report.report_json === 'string' ? JSON.parse(report.report_json) : report.report_json;
+    } catch (e) {
+      console.error('Failed to parse report_json:', e);
+      reportData = {};
+    }
+
+    let imageUrls = [];
+    if (Array.isArray(report.image_paths)) {
+      imageUrls = report.image_paths;
+    } else if (typeof report.image_paths === 'string') {
+      try {
+        imageUrls = JSON.parse(report.image_paths);
+      } catch (err) {
+        console.error('Failed to parse image_paths:', err.message);
+      }
+    }
+
+    const pdfBuffer = await PDFService.generateInspectionReportPDF({
+  report: {
+    ...report,
+    report_data: reportData,
+    image_urls: imageUrls
+  },
+  restaurant: {
+    name: report.restaurant_name,
+    license_number: report.license_number,
+    phone: report.phone,
+    email: report.email,
+    address: report.address,
+    zone: report.restaurant_zone,
+    region: report.restaurant_region
+  },
+  inspector: {
+    name: report.inspector_name
+  },
+  admin: {
+    name: report.admin_name || null
+  }
+});
+
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=FSSAI-Report-${reportId}.pdf`,
+      'Content-Length': pdfBuffer.length
+    });
+    res.send(pdfBuffer);
+
+  } catch (err) {
+    console.error('Failed to generate PDF:', err);
+    res.status(500).render('error', { message: 'Failed to generate PDF report' });
+  }
+});
 
 
 

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,31 +7,33 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-
 <%- include('partials/header2') %>
 
 <div class="wrapper">
 
-  <!-- Go Back Button -->
-  <div class="go-back">
-    <a href="/inspector/pastInspections" class="btn btn-outline">
-      ← Go Back
-    </a>
-  </div>
+  <div class="button-bar">
+  <a href="/inspector/pastInspections" class="btn btn-outline">
+    ← Go Back
+  </a>
+  <a href="/inspector/view-report/<%= report.id %>/pdf" class="btn btn-primary">
+    <i data-lucide="download"></i> Download PDF
+  </a>
+</div>
+ 
 
-  <!-- Header Block -->
   <div class="block report-header">
     <div>
       <h1>Inspection Report</h1>
       <p class="sub">Detailed hygiene inspection results</p>
     </div>
     <div class="badges">
-      <span class="badge <%= report.status %>"><%= report.status.charAt(0).toUpperCase() + report.status.slice(1) %></span>
-      <span class="badge score <%= scoreColor %>">Score: <%= report.hygiene_score %>/5.0</span>
+      <span class="badge <%= report.status %>">
+        Status: <%= report.status.charAt(0).toUpperCase() + report.status.slice(1) %>
+      </span>
+      <span class="badge score <%= scoreColor %>">Score: <%= hygieneScore %>/5.0</span>
     </div>
   </div>
 
-  <!-- Info Block -->
   <div class="block info-grid">
     <div>
       <h3>Restaurant Info</h3>
@@ -41,39 +42,41 @@
       <p><strong>Phone:</strong> <%= restaurant.phone %></p>
       <p><strong>Email:</strong> <%= restaurant.email %></p>
       <p><strong>Address:</strong> <%= restaurant.address %></p>
+      <p><strong>Region:</strong> <%= restaurant.region %></p>
+      <p><strong>Zone:</strong> <%= restaurant.zone %></p>
     </div>
     <div>
       <h3>Inspection Info</h3>
-      <p><strong>Date:</strong> <%= new Date(report.submitted_at).toLocaleDateString() %></p>
+      <p><strong>Date:</strong> <%= new Date(report.submitted_at).toLocaleString() %></p>
       <p><strong>Inspector:</strong> <%= inspector.name %></p>
       <p><strong>Latitude:</strong> <%= report.latitude || 'N/A' %></p>
       <p><strong>Longitude:</strong> <%= report.longitude || 'N/A' %></p>
+      <% if (report.status === 'approved' && adminName) { %>
+        <p><strong>Approved by:</strong> <%= adminName %></p>
+      <% } %>
     </div>
   </div>
 
-  <!-- Checklist Sections -->
   <% for (let category in checklistSchema) { %>
     <div class="block checklist-card">
       <h4><%= sectionLabels[category] %></h4>
       <ul>
-  <% for (let key in checklistSchema[category]) { 
-       const section = report.report_data[category] || {};
-       const isCompliant = section[key] === 'on';
-  %>
-    <li>
-      <span><%= checklistSchema[category][key] %></span>
-      <span class="<%= isCompliant ? 'compliant' : 'non-compliant' %> icon-label">
-        <i data-lucide="<%= isCompliant ? 'check-circle' : 'x-circle' %>"></i>
-        <%= isCompliant ? 'Compliant' : 'Non-Compliant' %>
-      </span>
-    </li>
-  <% } %>
-</ul>
-
+        <% for (let key in checklistSchema[category]) {
+          const section = report.report_data[category] || {};
+          const isCompliant = section[key] === 'on';
+        %>
+          <li>
+            <span><%= checklistSchema[category][key] %></span>
+            <span class="<%= isCompliant ? 'compliant' : 'non-compliant' %> icon-label">
+              <i data-lucide="<%= isCompliant ? 'check-circle' : 'x-circle' %>"></i>
+              <%= isCompliant ? 'Compliant' : 'Non-Compliant' %>
+            </span>
+          </li>
+        <% } %>
+      </ul>
     </div>
   <% } %>
 
-  <!-- Notes -->
   <% if (report.notes) { %>
     <div class="block">
       <h4>Inspector Notes</h4>
@@ -81,29 +84,26 @@
     </div>
   <% } %>
 
-  <!-- Images -->
   <% if (report.image_urls.length > 0) { %>
-  <div class="block">
-    <h4>Uploaded Images</h4>
-    <div class="images">
-      <% report.image_urls.forEach(img => { %>
-        <a href="/uploads/<%= img %>" target="_blank">
-          <img src="/uploads/<%= img %>" alt="Uploaded Image">
-        </a>
-      <% }) %>
+    <div class="block">
+      <h4>Uploaded Images</h4>
+      <div class="images">
+        <% report.image_urls.forEach(img => { %>
+          <a href="<%= img %>" target="_blank">
+            <img src="<%= img %>" alt="Uploaded Image">
+          </a>
+        <% }) %>
+      </div>
     </div>
-  </div>
-<% } %>
+  <% } %>
 
-
-  <!-- Score -->
   <div class="block center">
     <h4>Overall Assessment</h4>
-    <p class="big-score <%= scoreColor %>"><%= report.hygiene_score %></p>
+    <p class="big-score <%= scoreColor %>"><%= hygieneScore %></p>
     <p>
-      <% if (report.hygiene_score >= 4) { %>
+      <% if (hygieneScore >= 4) { %>
         Excellent Hygiene Standards
-      <% } else if (report.hygiene_score >= 3) { %>
+      <% } else if (hygieneScore >= 3) { %>
         Good Hygiene Standards
       <% } else { %>
         Needs Improvement

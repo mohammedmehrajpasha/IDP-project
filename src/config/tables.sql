@@ -106,6 +106,7 @@ CREATE TABLE inspection_reports (
   hygiene_score DECIMAL(2,1) CHECK (hygiene_score BETWEEN 1.0 AND 5.0),
   submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+  approved_by INT,
   
   FOREIGN KEY (inspection_id) REFERENCES inspections(id) ON DELETE CASCADE,
   FOREIGN KEY (inspector_id) REFERENCES inspectors(id) ON DELETE CASCADE,

@@ -33,6 +33,9 @@ app.use(inspectorRoutes);
 const userRoutes = require("./src/routes/userRoutes");
 app.use(userRoutes);
 
+const superAdminRoutes = require("./src/routes/superAdminRoutes");
+app.use('/superadmin', superAdminRoutes);
+
 // Routes
 app.get('/', (req, res) => res.render('home1'));
 
@@ -49,7 +52,7 @@ app.get('/getGeoLocation', (req, res) => res.render('geoLocation'));
 app.locals.formatLabel = function(key) {
   return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
 };
-app.use('/uploads', express.static('D:/images'));
+// app.use('/uploads', express.static('D:/images'));
 
 
 
