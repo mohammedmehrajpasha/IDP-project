@@ -4,50 +4,60 @@ const db = require('./src/config/dbConnect');
 
 router.get('/fssai-chatbot', async (req, res) => {
   try {
-
-    // Fetch approved restaurant details
+    // Fetch top 5 approved restaurant details
     const [restaurants] = await db.query(`
-      SELECT id, name, zone, region, hygiene_score, license_number,last_inspection_date,contact_person,phone
+      SELECT id, name, zone, region, hygiene_score, license_number, last_inspection_date, contact_person, phone
       FROM restaurants
       WHERE status = 'approved'
+      LIMIT 5
     `);
 
-    // Format restaurant section
+    // Format restaurant info into HTML links
     const restaurantSection = restaurants.map(r =>
-      `🏢 ${r.name} (Zone: ${r.zone}, Region: ${r.region}, Hygiene Score: ${r.hygiene_score}, License No: ${r.license_number},Last inspection date : ${r.last_inspection_date},Contact Person : ${r.contact_person},phone number :${r.phone}) - [View Report](/user/view-report/${r.id})`
-    ).join('\n');
+      `🏢 <strong>${r.name}</strong> (Zone: ${r.zone}, Region: ${r.region}, Hygiene Score: ${r.hygiene_score}, License No: ${r.license_number}, Last Inspection: ${r.last_inspection_date}, Contact: ${r.contact_person}, 📞 ${r.phone})<br>
+      ➤ <a href="/user/view-report/${r.id}" target="_blank">📄 View Report</a> | 
+      <a href="/user/file-complaint/${r.id}" target="_blank">📝 File Complaint</a>`
+    ).join('<br><br>');
+
+
 
     const fssaiIntro = `
-You are an AI assistant for the FSSAI Inspector Hub platform. Guide users on:
+🤖 <strong>Hello!</strong> I am your official assistant for the <strong>FSSAI Inspector Hub</strong> platform. I specialize only in food safety, hygiene inspections, and FSSAI licensing.
 
-🔹 General FSSAI rules, licenses, hygiene expectations.
-🔹 How hygiene scores are calculated and what they mean.
-🔹 How the platform helps users find safe restaurants.
-🔹 How to view reports, favorites, and file complaints.
+🔒 <strong>Note:</strong> I respond only to food-related queries.
 
-**FSSAI Licensing Info:**
-All food businesses in India must register or obtain a license with FSSAI depending on their size and type. Each restaurant on our platform includes a valid license number for verification.
+🍽️ <strong>FSSAI Help Topics:</strong><br>
+- What is FSSAI and why is licensing important?<br>
+- How hygiene scores are calculated.<br>
+- Viewing inspection reports.<br>
+- How to file complaints.<br>
+- Approved restaurants near you.
 
-**How Hygiene Scores Work:**
-- 🟢 4.1 – 5.0: Excellent
-- 🟡 3.0 – 4.0: Good
-- 🟠 2.0 – 2.9: Average
-- 🔴 Below 2.0: Poor
-Scores are based on hygiene audits that check kitchen safety, food handling, storage, and sanitation.
 
-**Platform Help:**
-- ⭐ Favorites: [View My Favorites](/user/favorites)
-- 📝 File/View Complaints: [My Complaints](/user/my-complaints)
-- 📄 Restaurant Reports: [View All Reports](/user/view-report/:id)
 
-**Complaint Filing Steps:**
-1. Go to 'My Complaints'
-2. Select a restaurant.
-3. Submit your concern.
-4. FSSAI inspectors will follow up.
 
-**Current Approved Restaurants**:
-${restaurantSection}
+📊 <strong>Hygiene Score Meaning:</strong><br>
+🟢 4.1–5.0: Excellent<br>
+🟡 3.0–4.0: Good<br>
+🟠 2.0–2.9: Average<br>
+🔴 Below 2.0: Poor
+
+🧾 <strong>FSSAI License Requirement:</strong><br>
+All listed restaurants are licensed by FSSAI.
+
+
+
+
+
+🛠️ <strong>How to File a Complaint:</strong><br>
+1. Select a restaurant from below.<br>
+2. Click on <strong>"File Complaint"</strong>.<br>
+3. Fill the form and submit.
+
+📍 <strong>Top Approved Restaurants:</strong><br>
+${restaurantSection} 
+
+❗ <strong>Reminder:</strong> I answer only questions about food safety, inspections, and FSSAI platform features.
     `;
 
     res.json({ prompt: fssaiIntro });

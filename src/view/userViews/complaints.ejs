@@ -3,19 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <title>Complaints & Feedback</title>
+
   <link rel="stylesheet" href="/css/complaints.css">
 </head>
+
 <body>
   <%- include('../partials/header3') %>
 
   <div class="complaints-container">
     <div class="complaints-wrapper">
-        
-      <div class="container">
-        <h1>My Complaints</h1>
-        <p class="subtitle">Track the status of complaints you've submitted</p>
+      <div class="complaints-box">
+        <h1 class="complaints-heading">My Complaints</h1>
+        <p class="complaints-subtitle">Track the status of complaints...</p>
   
-        <!-- Complaint History -->
+
         <% if (complaints.length === 0) { %>
           <p class="empty-msg">No Complaints Filed</p>
         <% } else { %>
@@ -24,21 +25,29 @@
               <h3><%= c.subject %></h3>
               <p><strong>Restaurant:</strong> <%= c.restaurant_name %>
                 <% if (c.is_anonymous) { %>
-                  <span class="anonymous-label">• Anonymous</span>
+                  <span class="anonymous-label">Anonymous</span>
                 <% } %>
               </p>
               <p><%= c.message %></p>
               <p>Status: <span class="status-label <%= c.status %>"><%= c.status %></span></p>
               <p>Filed on: <%= new Date(c.created_at).toDateString() %></p>
+
               <% if (c.status === 'resolved') { %>
                 <div class="resolution-msg">✅ Your complaint has been addressed and resolved.</div>
+              <% } %>
+
+              <% if (c.images && c.images.length > 0) { %>
+                <div class="images-preview">
+                  <% c.images.forEach(img => { %>
+                    <img src="/uploads/<%= img %>" alt="Uploaded Image">
+                  <% }) %>
+                </div>
               <% } %>
             </div>
           <% }) %>
         <% } %>
       </div>
-      </div>
-      </div>
-    
+    </div>
+  </div>
 </body>
 </html>

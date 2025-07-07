@@ -22,6 +22,8 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src', 'view'));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
 
 app.use('/chatbot', express.static(path.join(__dirname, 'public/chatbot')));
 
@@ -44,6 +46,9 @@ app.use(inspectorRoutes);
 
 const userRoutes = require("./src/routes/userRoutes");
 app.use(userRoutes);
+
+
+
 
 // Routes
 app.get('/', (req, res) => res.render('home1'));
