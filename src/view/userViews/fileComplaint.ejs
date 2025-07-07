@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>File Complaint</title>
+  <link rel="stylesheet" href="/css/fileComplaint.css">
+</head>
+<body>
+  <%- include('../partials/header3') %>
+
+  <div class="complaint-container">
+    <h2>File a Complaint</h2>
+    <p>Restaurant: <strong><%= restaurant.name %></strong></p>
+
+    <form action="/user/complaint/<%= restaurantId %>" method="POST">
+      <label for="subject">Subject:</label>
+      <input type="text" id="subject" name="subject" required>
+
+      <label for="description">Description:</label>
+      <textarea id="description" name="description" rows="7" required></textarea>
+
+      <label>
+        <input type="checkbox" name="anonymous"> Submit as Anonymous
+      </label>
+
+      <div class="guidelines">
+        <h4>Complaint Guidelines</h4>
+        <ul>
+          <li>Be specific and factual in your complaint</li>
+          <li>Include dates, times, and details when possible</li>
+          <li>Avoid offensive or inappropriate language</li>
+          <li>Complaints are reviewed within 2–3 business days</li>
+        </ul>
+      </div>
+
+      <button type="submit">Submit Complaint</button>
+    </form>
+  </div>
+</body>
+</html>

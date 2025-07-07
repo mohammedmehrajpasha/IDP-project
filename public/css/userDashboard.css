@@ -130,3 +130,11 @@ body {
     color: #6b7280;
   }
   
+
+  #root {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+  }
+  

@@ -23,6 +23,18 @@ app.set('views', path.join(__dirname, 'src', 'view'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 
+app.use('/chatbot', express.static(path.join(__dirname, 'public/chatbot')));
+
+
+const blogsRoute = require('./chatbotRoute');
+app.use('/api', blogsRoute);
+
+app.get('/show-chatbot', (req, res) => {
+  res.render('chatbot'); // This refers to src/view/chatbot.ejs
+});
+
+
+
 const adminRoutes = require("./src/routes/adminRoutes");
 app.use(adminRoutes);
 
