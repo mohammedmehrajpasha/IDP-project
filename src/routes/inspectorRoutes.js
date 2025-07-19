@@ -240,6 +240,16 @@ router.get('/inspector/restaurants/edit/:id', async (req, res) => {
   }
 });
 
+router.post('/inspector/restaurants/edit/:id', async (req, res) => {
+  
+  const { name, license_number, contact_person, phone, email, address, region, status } = req.body;
+  await db.query(
+    'UPDATE restaurants SET name=?, license_number=?, contact_person=?, phone=?, email=?, address=?, region=?, status=? WHERE id=?',
+    [name, license_number, contact_person, phone, email, address, region, status, req.params.id]
+  );
+  res.redirect('/inspector/restaurants');
+});
+
 // GET route to render the inspection form
 router.get('/inspection/start/:id', async (req, res) => {
   const inspectionId = req.params.id;
@@ -537,7 +547,7 @@ router.get('/inspector/view-report/:id/pdf', async (req, res) => {
 
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename=FSSAI-Report-${reportId}.pdf`,
+      'Content-Disposition': `attachment; filename=FHIR-${reportId}.pdf`,
       'Content-Length': pdfBuffer.length
     });
     res.send(pdfBuffer);
@@ -547,101 +557,5 @@ router.get('/inspector/view-report/:id/pdf', async (req, res) => {
     res.status(500).render('error', { message: 'Failed to generate PDF report' });
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const inspectionCategories = require('../data/inspectionCategories');
-// router.get('/inspections/start/:id', async (req, res) => {
-//   const inspectionId = req.params.id;
-
-//   try {
-//     // Get inspection and restaurant info
-//     const [[inspection]] = await db.query(
-//       `SELECT i.*, r.name, r.license_number, r.phone, r.address
-//        FROM inspections i
-//        JOIN restaurants r ON i.restaurant_id = r.id
-//        WHERE i.id = ?`, [inspectionId]);
-
-//     if (!inspection) {
-//       return res.status(404).render('error', { message: 'Inspection not found' });
-//     }
-
-//     res.render('startInspection', {
-//       inspection,
-//       restaurant: inspection,
-//       categories: inspectionCategories
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).render('error', { message: 'Internal Server Error' });
-//   }
-// });
-
-
-  
-//Post
-
-//   router.post('/inspections/start/:id', async (req, res) => {
-//     const inspectionId = req.params.id;
-//     const inspectorId = req.session.ID; // assumes you have a login with a session
-//     const formData = req.body;
-  
-//     try {
-//       // Get restaurant ID from inspection
-//       const [[inspection]] = await db.query(
-//         `SELECT * FROM inspections WHERE id = ?`,
-//         [inspectionId]
-//       );
-  
-//       if (!inspection) {
-//         return res.status(404).render('error', { message: 'Invalid inspection ID' });
-//       }
-  
-//       // Build JSON from checkbox data
-//       const report = {};
-  
-//       for (const category in formData) {
-//         if (category !== 'notes') { // exclude notes from report
-//           report[category] = {};
-  
-//           for (const item in formData[category]) {
-//             report[category][item] = true;
-//           }
-//         }
-//       }
-//       const notes = formData.notes || '';
-//       // Insert into inspection_reports with notes
-//       await db.query(
-//         ` INSERT INTO inspection_reports 
-//           (inspection_id, inspector_id, restaurant_id, report_json, notes) 
-//           VALUES (?, ?, ?, ?, ?)`,
-//         [inspectionId, inspectorId, inspection.restaurant_id, JSON.stringify(report), notes]
-//       );
-  
-//       // Update inspection's status to Completed
-//       await db.query(
-//         `UPDATE inspections SET status = 'Completed' WHERE id = ?`,
-//         [inspectionId]
-//       );
-  
-      
-// return res.render('success', { message: 'Inspection successfully submitted!' });
-
-//     } catch (err) {
-//       console.error(err);
-//       res.status(500).render('error', { message: 'Failed to submit inspection' });
-//     }
-//   });
-  
 
 module.exports = router; 
