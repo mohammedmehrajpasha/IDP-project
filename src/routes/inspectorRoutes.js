@@ -482,6 +482,8 @@ router.get('/inspector/view-report/:id', async (req, res) => {
 });
 
 
+
+
 router.get('/inspector/view-report/:id/pdf', async (req, res) => {
   const reportId = req.params.id;
 
@@ -557,5 +559,175 @@ router.get('/inspector/view-report/:id/pdf', async (req, res) => {
     res.status(500).render('error', { message: 'Failed to generate PDF report' });
   }
 });
+
+
+router.get('/inspector/complaints', async (req, res) => {
+  try {
+    const inspectorZone = req.session.zone;
+    const inspectorRegion = req.session.region;
+
+    const [pending] = await db.query(`
+      SELECT c.*, u.name AS user_name, r.name AS restaurant_name
+      FROM complaints c
+      JOIN users u ON c.user_id = u.email
+      JOIN restaurants r ON c.restaurant_id = r.id
+      WHERE c.status = 'pending' AND r.zone = ? AND r.region = ?
+      ORDER BY c.created_at DESC
+    `, [inspectorZone, inspectorRegion]);
+
+    const [resolved] = await db.query(`
+      SELECT c.*, u.name AS user_name, r.name AS restaurant_name
+      FROM complaints c
+      JOIN users u ON c.user_id = u.email
+      JOIN restaurants r ON c.restaurant_id = r.id
+      WHERE c.status = 'resolved' AND r.zone = ? AND r.region = ?
+      ORDER BY c.updated_at DESC
+    `, [inspectorZone, inspectorRegion]);
+
+    res.render('inspViewComplaints', { pending, resolved });
+  } catch (err) {
+    console.error('Error fetching complaints:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+
+
+router.get('/inspector/complaints/:id', async (req, res) => {
+  const complaintId = req.params.id;
+  const inspectorZone = req.session.zone;
+  const inspectorRegion = req.session.region;
+
+  try {
+    const [[complaint]] = await db.query(`
+      SELECT c.*, u.name AS user_name, r.name AS restaurant_name, r.zone, r.region
+      FROM complaints c
+      JOIN users u ON c.user_id = u.email
+      JOIN restaurants r ON c.restaurant_id = r.id
+      WHERE c.id = ? AND r.zone = ? AND r.region = ?
+    `, [complaintId, inspectorZone, inspectorRegion]);
+
+    if (!complaint) return res.status(404).send('Complaint not found or unauthorized');
+
+    res.render('detailedComplaint', { complaint });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error loading complaint details');
+  }
+});
+
+
+
+
+
+router.post('/inspector/complaints/resolve/:id', async (req, res) => {
+  const complaintId = req.params.id;
+  const { resolution } = req.body;
+
+  try {
+    await db.query(`
+      UPDATE complaints 
+      SET status = 'resolved', resolution_taken = ?, updated_at = NOW()
+      WHERE id = ?
+    `, [resolution, complaintId]);
+
+    res.redirect('/inspector/complaints');
+  } catch (err) {
+    console.error('Error resolving complaint:', err);
+    res.status(500).send('Failed to resolve complaint');
+  }
+});
+
+
+
+
+
+
+
+
+
+// const inspectionCategories = require('../data/inspectionCategories');
+// router.get('/inspections/start/:id', async (req, res) => {
+//   const inspectionId = req.params.id;
+
+//   try {
+//     // Get inspection and restaurant info
+//     const [[inspection]] = await db.query(
+//       `SELECT i.*, r.name, r.license_number, r.phone, r.address
+//        FROM inspections i
+//        JOIN restaurants r ON i.restaurant_id = r.id
+//        WHERE i.id = ?`, [inspectionId]);
+
+//     if (!inspection) {
+//       return res.status(404).render('error', { message: 'Inspection not found' });
+//     }
+
+//     res.render('startInspection', {
+//       inspection,
+//       restaurant: inspection,
+//       categories: inspectionCategories
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).render('error', { message: 'Internal Server Error' });
+//   }
+// });
+
+
+  
+//Post
+
+//   router.post('/inspections/start/:id', async (req, res) => {
+//     const inspectionId = req.params.id;
+//     const inspectorId = req.session.ID; // assumes you have a login with a session
+//     const formData = req.body;
+  
+//     try {
+//       // Get restaurant ID from inspection
+//       const [[inspection]] = await db.query(
+//         `SELECT * FROM inspections WHERE id = ?`,
+//         [inspectionId]
+//       );
+  
+//       if (!inspection) {
+//         return res.status(404).render('error', { message: 'Invalid inspection ID' });
+//       }
+  
+//       // Build JSON from checkbox data
+//       const report = {};
+  
+//       for (const category in formData) {
+//         if (category !== 'notes') { // exclude notes from report
+//           report[category] = {};
+  
+//           for (const item in formData[category]) {
+//             report[category][item] = true;
+//           }
+//         }
+//       }
+//       const notes = formData.notes || '';
+//       // Insert into inspection_reports with notes
+//       await db.query(
+//         ` INSERT INTO inspection_reports 
+//           (inspection_id, inspector_id, restaurant_id, report_json, notes) 
+//           VALUES (?, ?, ?, ?, ?)`,
+//         [inspectionId, inspectorId, inspection.restaurant_id, JSON.stringify(report), notes]
+//       );
+  
+//       // Update inspection's status to Completed
+//       await db.query(
+//         `UPDATE inspections SET status = 'Completed' WHERE id = ?`,
+//         [inspectionId]
+//       );
+  
+      
+// return res.render('success', { message: 'Inspection successfully submitted!' });
+
+//     } catch (err) {
+//       console.error(err);
+//       res.status(500).render('error', { message: 'Failed to submit inspection' });
+//     }
+//   });
+  
 
 module.exports = router; 

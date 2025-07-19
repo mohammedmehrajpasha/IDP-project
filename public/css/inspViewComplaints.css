@@ -1,0 +1,150 @@
+/* inspViewComplaints.css */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .wrapper h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin: 30px 0;
+    font-size: 2.5rem;
+    position: relative;
+    padding-bottom: 15px;
+  }
+  
+  .wrapper h1:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, #3498db, #9b59b6);
+    border-radius: 2px;
+  }
+  
+  .wrapper h2 {
+    color: #34495e;
+    margin: 30px 15px 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ecf0f1;
+    font-size: 1.8rem;
+  }
+  
+  .wrapper p {
+    margin: 15px;
+    color: #7f8c8d;
+    font-style: italic;
+  }
+  
+  .wrapper ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 15px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+  }
+  
+  .wrapper li {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .wrapper li:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .wrapper li::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+  }
+  
+  /* Different left border colors for pending vs resolved */
+  .wrapper ul:first-of-type li::before {
+    background: linear-gradient(to bottom, #e74c3c, #f39c12);
+  }
+  
+  .wrapper ul:last-of-type li::before {
+    background: linear-gradient(to bottom, #2ecc71, #27ae60);
+  }
+  
+  .wrapper strong {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  .wrapper a {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 8px 20px;
+    background: linear-gradient(90deg, #3498db, #9b59b6);
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .wrapper a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+  }
+  
+  /* Status badges */
+  .wrapper li::after {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 0.8rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+  }
+  
+  .wrapper ul:first-of-type li::after {
+    content: "PENDING";
+    background-color: #fff8e1;
+    color: #f39c12;
+  }
+  
+  .wrapper ul:last-of-type li::after {
+    content: "RESOLVED";
+    background-color: #e8f5e9;
+    color: #27ae60;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .wrapper ul {
+      grid-template-columns: 1fr;
+    }
+    
+    .wrapper h1 {
+      font-size: 2rem;
+    }
+    
+    .wrapper h2 {
+      font-size: 1.5rem;
+    }
+  }
