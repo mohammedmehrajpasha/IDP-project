@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Inspector – FSSAI Inspector Hub</title>
+  <link rel="stylesheet" href="/css/addInspector.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<%- include('../partials/header1') %>
+
+<div class="add-container">
+
+  <!-- Header Section -->
+  <div class="add-header">
+    <div>
+      <h1>Edit Admin</h1>
+      <p>Update the details for this Admin below.</p>
+    </div>
+    <div class="assignment">
+      <i data-lucide="user-cog" class="lucide-icon green"></i>
+      <span>ID: <%= admin.id %></span>
+    </div>
+  </div>
+
+  <!-- Form Card -->
+  <div class="card">
+    <h2>Admin Details</h2>
+    <p class="subtitle">Make necessary changes and click update.</p>
+    
+    <form action="/superadmin/admins/edit/<%= admin.id %>" method="POST" class="add-form">
+      <div class="form-grid">
+        <div>
+          <label for="name">Full Name *</label>
+          <input type="text" id="name" name="name" value="<%= admin.name %>" required>
+        </div>
+
+        <div>
+          <label for="email">Email *</label>
+          <input type="email" id="email" name="email" value="<%= admin.email %>" required>
+        </div>
+
+        <div>
+          <label for="phone">Phone Number *</label>
+          <input type="text" id="phone" name="phone" value="<%=admin.phone %>" required>
+        </div>
+
+        <div>
+          <label for="zone">Zone *</label>
+          <input type="text" id="zone" name="zone" value="<%= admin.zone %>" required>
+        </div>
+      </div>
+
+
+      <div class="form-actions">
+        <a href="/superadmins/admins" class="btn-outline">← Cancel</a>
+        <button type="submit" class="btn-black">Update Admin</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>

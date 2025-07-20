@@ -8,55 +8,84 @@ const SUPERADMIN_CREDENTIALS = {
   password: 'super123' // hardcoded for now
 };
 
-router.get('/', (req, res) => {
+
+router.get('/superadmin/login', (req, res) => {
   res.render('superadmin/login');
 });
 
-router.post('/login', (req, res) => {
+router.post('/superadmin/login', (req, res) => {
   const { username, password } = req.body;
   if (
     username === SUPERADMIN_CREDENTIALS.username &&
     password === SUPERADMIN_CREDENTIALS.password
   ) {
     req.session.superAdmin = true;
-    res.redirect('/superadmin/dashboard');
+    res.redirect('/superadmin/dashboard?success=1');
   } else {
-    res.render('superAdmin/login', { error: 'Invalid credentials' });
+    res.render('superadmin/login', { error: 'Invalid credentials' });
   }
 });
 
-router.get('/superadminDashboard', async (req, res) => {
+router.get('/superadmin/dashboard', async (req, res) => {
   if (!req.session.superAdmin) return res.redirect('/superadmin/login');
 
   const [[stats]] = await db.query(`SELECT COUNT(*) AS totalAdmins FROM admins`);
-  res.render('superAdmin/dashboard', { stats });
+  res.render('superadmin/dashboard', { stats });
 });
 
-router.get('/admins', async (req, res) => {
+router.get('/superadmins/admins', async (req, res) => {
   if (!req.session.superAdmin) return res.redirect('/superadmin/login');
   const [admins] = await db.query(`SELECT * FROM admins`);
-  res.render('superAdmin/manageAdmins', { admins });
+  res.render('superadmin/manageAdmins', { admins });
 });
 
-router.post('/admins/add', async (req, res) => {
-  const { name, email, zone, password } = req.body;
-  await db.query(`INSERT INTO admins (name, email, zone, password) VALUES (?, ?, ?, ?)`,
-    [name, email, zone, password]);
-  res.redirect('/superadmin/admins');
+router.get('/superadmin/admins/add', (req, res) => {
+  const success = req.query.success;
+  if (!req.session.superAdmin) return res.redirect('/superadmin/login');
+  res.render('superadmin/addAdmins', {  success });
 });
 
-router.post('/admins/edit/:id', async (req, res) => {
-  const { name, email, zone } = req.body;
+router.post('/superadmin/admins/add', async (req, res) => {
+  if (!req.session.superAdmin) return res.redirect('/superadmin/login');
+  const { name, email,phone, zone, password } = req.body;
+  await db.query(`INSERT INTO admins (name, email,phone, zone, password) VALUES (?, ?,?, ?, ?)`,
+    [name, email, phone,zone, password]);
+  res.redirect('/superadmins/admins');
+});
+
+
+router.get('/superadmin/admins/edit/:id', async (req, res) => {
+  const adminId = req.params.id;
+  if (!req.session.superAdmin) return res.redirect('/superadmin/login');
+
+  try {
+    const [results] = await db.query('SELECT * FROM admins WHERE id = ?', [adminId]);
+    if (results.length === 0) {
+      return res.status(404).render('error', { message: 'Admin not found' });
+    }
+    res.render('superadmin/editAdmin', { admin: results[0] });
+  } catch (err) {
+    console.error('Error fetching inspector:', err);
+    res.status(500).render('error', { message: 'Failed to load inspector data.' });
+  }
+});
+
+router.post('/superadmin/admins/edit/:id', async (req, res) => {
+  if (!req.session.superAdmin) return res.redirect('/superadmin/login');
+  const { name, email,phone, zone } = req.body;
   const id = req.params.id;
-  await db.query(`UPDATE admins SET name = ?, email = ?, zone = ? WHERE id = ?`,
-    [name, email, zone, id]);
-  res.redirect('/superadmin/admins');
+  await db.query(`UPDATE admins SET name = ?, email = ?,phone=?, zone = ? WHERE id = ?`,
+    [name, email,phone, zone, id]);
+  res.redirect('/superadmins/admins');
 });
 
-router.post('/admins/delete/:id', async (req, res) => {
+router.post('/superadmin/admins/delete/:id', async (req, res) => {
+  if (!req.session.superAdmin) return res.redirect('/superadmin/login');
   const id = req.params.id;
   await db.query(`DELETE FROM admins WHERE id = ?`, [id]);
-  res.redirect('/superadmin/admins');
+  res.redirect('/superadmins/admins');
 });
+
+
 
 module.exports = router;

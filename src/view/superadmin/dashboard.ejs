@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard – FSSAI Inspector Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/adminDashboard.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<%- include('../partials/header1') %>
+
+<div class="dashboard-container">
+
+  <!-- Greeting & Status -->
+  <div class="dashboard-header">
+    <div>
+      <h1>Super Admin Dashboard</h1>
+    </div>
+    <div class="status">
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div>
+        <p>Total Admins</p>
+        <h2 class="stat-value"><%= stats.totalAdmins %></h2>
+      </div>
+      <div class="stat-icon"><i data-lucide="users" class="lucide-icon blue"></i></div>
+    </div>
+
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="actions-grid">
+      <a href="/superadmins/admins" class="action-card">
+        <i data-lucide="users" class="lucide-icon icon-box blue-bg"></i>
+        <div>
+          <h4>Manage Admins</h4>
+          <p>Add, edit, or remove admins </p>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  lucide.createIcons();
+</script>
+<!-- Add this at the bottom of your adminDashboard.ejs -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  // Show success message if redirected from login
+  const urlParams = new URLSearchParams(window.location.search);
+  const success = urlParams.get('success');
+
+  if (success) {
+    Swal.fire({
+      icon: 'success',
+      title: 'Login Successful',
+      text: 'Welcome back!',
+      timer: 2000,
+      showConfirmButton: false
+    }).then(() => {
+      // Clean URL after showing message
+      window.history.replaceState({}, document.title, window.location.pathname);
+    });
+  }
+</script>
+
+
+</body>
+</html>

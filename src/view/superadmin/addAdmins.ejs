@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add Admins – FSSAI Inspector Hub</title>
+  <link rel="stylesheet" href="/css/addInspector.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<%- include('../partials/header1') %>
+
+<div class="add-container">
+  <!-- Header Section -->
+  <div class="add-header">
+    <div>
+      <h1>Add New Admins</h1>
+      <p>Fill in the details to register a new admin </p>
+    </div>
+    <div class="assignment">
+      <i data-lucide="user-plus" class="lucide-icon green"></i>
+    </div>
+  </div>
+
+  <% if (success) { %>
+    <div class="success-message">✅ Admin added successfully!</div>
+  <% } %>
+
+  <!-- Form Card -->
+  <div class="card">
+    <h2>Admin Details</h2>
+    <p class="subtitle">Provide Admin's credentials and zone assignment.</p>
+
+    <form action="/superadmin/admins/add" method="POST" class="add-form">
+      <div class="form-grid">
+        <div>
+          <label for="name">Full Name *</label>
+          <input type="text" name="name" required placeholder="Admin Name">
+        </div>
+
+        <div>
+          <label for="email">Email *</label>
+          <input type="email" name="email" required placeholder="admin@example.com">
+        </div>
+
+        <div>
+          <label for="phone">Phone Number *</label>
+          <input type="text" id="phone" name="phone" required placeholder="+91 xxxxxxxxx">
+        </div>
+
+        <div>
+          <label for="zone">Zone *</label>
+          <input type="text" name="zone" required placeholder="zone">
+        </div>
+
+        <div>
+          <label for="password">Password *</label>
+          <input type="password" name="password" required placeholder="Create password">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="/superadmins/admins" class="btn-outline">← Cancel</a>
+        <button type="submit" class="btn-black">Add Admin</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>

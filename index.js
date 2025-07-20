@@ -48,7 +48,7 @@ const userRoutes = require("./src/routes/userRoutes");
 app.use(userRoutes);
 
 const superAdminRoutes = require("./src/routes/superAdminRoutes");
-app.use('/superadmin', superAdminRoutes);
+app.use( superAdminRoutes);
 
 // Routes
 app.get('/', (req, res) => res.render('home1'));
