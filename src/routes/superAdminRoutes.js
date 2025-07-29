@@ -4,8 +4,8 @@ const router = express.Router();
 const db = require('../config/dbConnect');
 
 const SUPERADMIN_CREDENTIALS = {
-  username: 'superadmin',
-  password: 'super123' // hardcoded for now
+  username: 'superadmin@gmail.com',
+  password: 'pass123' // hardcoded for now
 };
 
 
