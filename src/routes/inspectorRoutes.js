@@ -592,7 +592,6 @@ router.get('/inspector/complaints', async (req, res) => {
 });
 
 
-
 router.get('/inspector/complaints/:id', async (req, res) => {
   const complaintId = req.params.id;
   const inspectorZone = req.session.zone;
